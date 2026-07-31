@@ -85,12 +85,22 @@ def _resolve(client: HorizonClient, machine_ids: list[str]) -> list[dict]:
     return [by_id[mid] for mid in machine_ids]
 
 
+_DETAIL_CAP = 20
+
+
 def _blast(targets: list[dict]) -> dict:
-    return {
+    """Counts + affected users complete; per-machine detail capped for the token budget."""
+    out = {
         "machine_count": len(targets),
         "assigned_users": sorted({t["user"] for t in targets if t["user"]}),
-        "machines": [{"id": t["id"], "name": t["name"], "state": t["state"], "user": t["user"]} for t in targets],
+        "machines": [
+            {"id": t["id"], "name": t["name"], "state": t["state"], "user": t["user"]}
+            for t in targets[:_DETAIL_CAP]
+        ],
     }
+    if len(targets) > _DETAIL_CAP:
+        out["machines_note"] = f"showing {_DETAIL_CAP} of {len(targets)}"
+    return out
 
 
 def reset_machines(

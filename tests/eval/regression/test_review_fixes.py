@@ -99,6 +99,24 @@ def test_n1_fetch_all_non_paginating_server_no_duplication():
     assert len(c.calls) == 2  # page 1 (all new) + page 2 (nothing new → stop), not 100
 
 
+def test_blast_radius_detail_list_is_capped():
+    """Optimization: a mass operation keeps counts complete but caps the detail list."""
+    from vmware_vdi.ops import machines as M
+    from vmware_vdi.ops import sessions as S
+
+    many = [{"id": f"s-{i}", "user": f"u{i}", "state": "CONNECTED"} for i in range(50)]
+    b = S._blast(many)
+    assert b["session_count"] == 50                 # count complete
+    assert len(b["affected_users"]) == 50           # users complete
+    assert len(b["sessions"]) == 20                 # detail capped
+    assert b["sessions_note"] == "showing 20 of 50"
+
+    mm = [{"id": f"m-{i}", "name": f"n{i}", "state": "ERROR", "user": ""} for i in range(30)]
+    mb = M._blast(mm)
+    assert mb["machine_count"] == 30 and len(mb["machines"]) == 20
+    assert mb["machines_note"] == "showing 20 of 30"
+
+
 def test_l1_entitlement_non_group_is_user():
     """L1: a non-group principal must project as USER, not None."""
     assert E._summary({"id": "s-1", "name": "alice"})["type"] == "USER"

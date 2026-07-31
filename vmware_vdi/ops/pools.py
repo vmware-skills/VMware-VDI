@@ -99,7 +99,11 @@ def _pool_blast(client: HorizonClient, pool_id: str) -> dict:
     sessions = [s for s in _fetch_all(client, _SESSIONS)
                 if (s.get("desktop_pool_id") or s.get("desktop_id") or s.get("pool_id")) == pool_id]
     users = sorted({sanitize(str(s.get("user_name") or ""), 200) for s in sessions if s.get("user_name")})
-    return {"affected_desktops": len(machines), "in_session_users": len(users), "users": users}
+    # Count is complete; the name list is capped so a large pool's preview stays compact.
+    blast = {"affected_desktops": len(machines), "in_session_users": len(users), "users": users[:20]}
+    if len(users) > 20:
+        blast["users_note"] = f"showing 20 of {len(users)}"
+    return blast
 
 
 def push_image(

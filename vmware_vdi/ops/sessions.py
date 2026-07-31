@@ -103,13 +103,24 @@ def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str
     raise SessionError("Provide either session_ids or user to identify the target session(s).")
 
 
+_DETAIL_CAP = 20
+
+
 def _blast(targets: list[dict]) -> dict:
-    """Blast-radius descriptor stated in every preview and result."""
-    return {
+    """Blast-radius descriptor stated in every preview and result.
+
+    Counts and affected users are complete; the per-session detail list is capped so a
+    mass logoff does not flood the agent's context with hundreds of rows (high-signal
+    token budget — Anthropic tool-design principle).
+    """
+    out = {
         "session_count": len(targets),
         "affected_users": sorted({t["user"] for t in targets if t["user"]}),
-        "sessions": [{"id": t["id"], "user": t["user"], "state": t["state"]} for t in targets],
+        "sessions": [{"id": t["id"], "user": t["user"], "state": t["state"]} for t in targets[:_DETAIL_CAP]],
     }
+    if len(targets) > _DETAIL_CAP:
+        out["sessions_note"] = f"showing {_DETAIL_CAP} of {len(targets)}"
+    return out
 
 
 def _act(
