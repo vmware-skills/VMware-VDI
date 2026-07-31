@@ -51,6 +51,12 @@ class FakeClient:
             if not m:
                 raise VdiApiError("HTTP 404", status_code=404)
             return m[0]
+        if path.startswith("/inventory/v1/desktop-pools/"):
+            pid = path.rsplit("/", 1)[-1]
+            p = [x for x in _POOLS if x["id"] == pid]
+            if not p:
+                raise VdiApiError("HTTP 404", status_code=404)
+            return p[0]
         raise VdiApiError("HTTP 404", status_code=404)
 
     def post(self, path, json_data=None, *, retries=1):

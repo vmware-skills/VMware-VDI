@@ -21,7 +21,7 @@ from typing import Any
 
 from vmware_policy import sanitize
 
-from vmware_vdi.connection import HorizonClient
+from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
 from vmware_vdi.ops._paging import envelope as _envelope
@@ -47,10 +47,6 @@ def _summary(s: dict) -> dict:
     }
 
 
-def _fetch_all(client: HorizonClient) -> list[dict]:
-    return fetch_all(client, _BASE)
-
-
 def list_sessions(
     client: HorizonClient,
     *,
@@ -61,7 +57,7 @@ def list_sessions(
     offset: int = 0,
 ) -> dict:
     """List sessions, optionally filtered by user / pool id / state. Paginated envelope."""
-    rows = [_summary(s) for s in _fetch_all(client)]
+    rows = [_summary(s) for s in fetch_all(client, _BASE)]
     if user:
         u = user.lower()
         rows = [r for r in rows if u in (r["user"] or "").lower()]
@@ -80,19 +76,29 @@ def get_session(client: HorizonClient, session_id: str) -> dict:
 
 
 def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str | None) -> list[dict]:
-    """Resolve the target sessions from explicit ids or a user lookup. Refuses an empty match."""
-    everyone = [_summary(s) for s in _fetch_all(client)]
+    """Resolve the target sessions from explicit ids or a user lookup. Refuses an empty match.
+
+    Explicit ids are validated with per-id GETs — no full-estate fetch for a targeted
+    logoff. A user lookup needs the full list to substring-match.
+    """
     if session_ids:
-        by_id = {r["id"]: r for r in everyone}
-        missing = [sid for sid in session_ids if sid not in by_id]
+        found, missing = [], []
+        for sid in session_ids:
+            try:
+                found.append(_summary(client.get(f"{_BASE}/{sid}")))
+            except VdiApiError as exc:
+                if exc.status_code != 404:
+                    raise
+                missing.append(sid)
         if missing:
             raise SessionError(
                 f"Session id(s) not found: {sanitize(str(missing), 200)}. "
                 "Run session_list for current session ids."
             )
-        return [by_id[sid] for sid in session_ids]
+        return found
     if user:
         u = user.lower()
+        everyone = (_summary(s) for s in fetch_all(client, _BASE))
         matched = [r for r in everyone if u in (r["user"] or "").lower()]
         if not matched:
             raise SessionError(
@@ -126,7 +132,6 @@ def _blast(targets: list[dict]) -> dict:
 def _act(
     client: HorizonClient,
     action: str,
-    verb_path: str,
     *,
     session_ids: list[str] | None,
     user: str | None,
@@ -134,7 +139,10 @@ def _act(
     audit_logger: Any = None,
     target_name: str = "",
 ) -> dict:
-    """Shared preview/confirm/audit flow for logoff & disconnect (both POST an id array)."""
+    """Shared preview/confirm/audit flow for logoff & disconnect.
+
+    ``action`` doubles as the POST path verb (…/action/{action}); both POST a bare id array.
+    """
     targets = _resolve_ids(client, session_ids, user)
     blast = _blast(targets)
     if not confirm:
@@ -145,7 +153,7 @@ def _act(
             "hint": f"Re-run with confirm=True to {action} {blast['session_count']} session(s).",
         }
     ids = [t["id"] for t in targets]
-    client.post(f"{_BASE}/action/{verb_path}", json_data=ids)  # body is a bare id array
+    client.post(f"{_BASE}/action/{action}", json_data=ids)  # body is a bare id array
     if audit_logger is not None:
         audit_logger.log(
             target=target_name, operation=action, resource=",".join(ids),
@@ -166,7 +174,7 @@ def logoff_sessions(
 ) -> dict:
     """Force-logoff session(s) — kicks the user (profile write-back). Preview unless confirm=True."""
     return _act(
-        client, "logoff", "logoff", session_ids=session_ids, user=user,
+        client, "logoff", session_ids=session_ids, user=user,
         confirm=confirm, audit_logger=audit_logger, target_name=target_name,
     )
 
@@ -182,7 +190,7 @@ def disconnect_sessions(
 ) -> dict:
     """Disconnect session(s) — state preserved, user can reconnect. Preview unless confirm=True."""
     return _act(
-        client, "disconnect", "disconnect", session_ids=session_ids, user=user,
+        client, "disconnect", session_ids=session_ids, user=user,
         confirm=confirm, audit_logger=audit_logger, target_name=target_name,
     )
 

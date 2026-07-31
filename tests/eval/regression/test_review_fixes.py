@@ -62,6 +62,7 @@ def test_h3_push_image_counts_users_when_session_uses_desktop_pool_id():
     """H3: sessions keyed by `desktop_pool_id` must still be counted in the push blast radius."""
     c = _FakeClient({
         "/inventory/v1/desktop-pools": [{"id": "pool-fin", "name": "Fin", "enabled": True}],
+        "/inventory/v1/desktop-pools/pool-fin": {"id": "pool-fin", "name": "Fin", "enabled": True},
         "/inventory/v1/machines": [{"id": "m-1", "desktop_pool_id": "pool-fin", "state": "CONNECTED"}],
         # session carries desktop_pool_id (NOT desktop_id) — the field the old code missed
         "/inventory/v1/sessions": [{"id": "s-1", "desktop_pool_id": "pool-fin", "user_name": "ACME\\alice"}],

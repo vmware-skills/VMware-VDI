@@ -13,6 +13,7 @@ from vmware_policy import sanitize
 
 from vmware_vdi.connection import HorizonClient
 from vmware_vdi.ops._fetch import fetch_all
+from vmware_vdi.ops._fields import pool_id_of
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _SESSIONS = "/inventory/v1/sessions"
@@ -24,27 +25,15 @@ _EVENTS = "/external/v1/audit-events"
 _PROBLEM_STATES = {"AGENT_UNREACHABLE", "ERROR", "PROVISIONING_ERROR", "DELETING", "MAINTENANCE"}
 
 
-def _rows(client: HorizonClient, path: str, params: dict | None = None) -> list[dict]:
-    return fetch_all(client, path, params)
-
-
-def _pool_of(m: dict):
-    return m.get("desktop_pool_id") or m.get("desktop_id") or m.get("pool_id")
-
-
-def _session_pool_of(s: dict):
-    return s.get("desktop_pool_id") or s.get("desktop_id") or s.get("pool_id")
-
-
 def _mstate(m: dict) -> str:
     return (m.get("state") or m.get("machine_state") or "").upper()
 
 
 def health_summary(client: HorizonClient) -> dict:
     """One-glance VDI health: session totals by state, problem machines, pool availability."""
-    sessions = _rows(client, _SESSIONS)
-    machines = _rows(client, _MACHINES)
-    pools = _rows(client, _POOLS)
+    sessions = fetch_all(client, _SESSIONS)
+    machines = fetch_all(client, _MACHINES)
+    pools = fetch_all(client, _POOLS)
 
     sess_by_state = Counter((s.get("session_state") or s.get("state") or "UNKNOWN").upper() for s in sessions)
     problem = [m for m in machines if _mstate(m) in _PROBLEM_STATES]
@@ -61,10 +50,10 @@ def health_summary(client: HorizonClient) -> dict:
 
 def session_stats(client: HorizonClient) -> dict:
     """统计: concurrency by pool / protocol / state, and the busiest pools."""
-    sessions = _rows(client, _SESSIONS)
-    by_state = Counter((s.get("session_state") or "UNKNOWN").upper() for s in sessions)
-    by_proto = Counter((s.get("session_protocol") or "UNKNOWN").upper() for s in sessions)
-    by_pool = Counter(_session_pool_of(s) or "UNKNOWN" for s in sessions)
+    sessions = fetch_all(client, _SESSIONS)
+    by_state = Counter((s.get("session_state") or s.get("state") or "UNKNOWN").upper() for s in sessions)
+    by_proto = Counter((s.get("session_protocol") or s.get("protocol") or "UNKNOWN").upper() for s in sessions)
+    by_pool = Counter(pool_id_of(s) or "UNKNOWN" for s in sessions)
     connected = by_state.get("CONNECTED", 0)
     top = [{"pool_id": p, "sessions": n} for p, n in by_pool.most_common(10)]
     return {
@@ -78,11 +67,11 @@ def session_stats(client: HorizonClient) -> dict:
 
 def pool_utilization(client: HorizonClient) -> dict:
     """统计: per-pool machine counts (total/available/in-use/error) and utilization %."""
-    machines = _rows(client, _MACHINES)
-    pools = {p.get("id"): sanitize(str(p.get("name") or ""), 200) for p in _rows(client, _POOLS)}
+    machines = fetch_all(client, _MACHINES)
+    pools = {p.get("id"): sanitize(str(p.get("name") or ""), 200) for p in fetch_all(client, _POOLS)}
     buckets: dict[str, Counter] = {}
     for m in machines:
-        buckets.setdefault(_pool_of(m) or "UNKNOWN", Counter())[_mstate(m)] += 1
+        buckets.setdefault(pool_id_of(m) or "UNKNOWN", Counter())[_mstate(m)] += 1
 
     out = []
     for pid, c in buckets.items():
@@ -123,7 +112,7 @@ def list_events(
     Severity is filtered client-side: Horizon's ``filter`` query param takes a URL-encoded
     JSON object, so passing a bare string would 400 the whole call — safer to fetch and filter here.
     """
-    rows = [_event_summary(e) for e in _rows(client, _EVENTS)]
+    rows = [_event_summary(e) for e in fetch_all(client, _EVENTS)]
     if severity:
         sev = severity.upper()
         rows = [r for r in rows if (r["severity"] or "").upper() == sev]

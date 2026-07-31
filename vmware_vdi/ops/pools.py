@@ -19,9 +19,10 @@ from typing import Any
 
 from vmware_policy import sanitize
 
-from vmware_vdi.connection import HorizonClient
+from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
+from vmware_vdi.ops._fields import pool_id_of
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _BASE = "/inventory/v1/desktop-pools"
@@ -45,13 +46,9 @@ def _summary(p: dict) -> dict:
     }
 
 
-def _fetch_all(client: HorizonClient, path: str) -> list[dict]:
-    return fetch_all(client, path)
-
-
 def list_pools(client: HorizonClient, *, limit: int = 50, offset: int = 0) -> dict:
     """List desktop pools with type, enabled state, and assignment. Paginated envelope."""
-    rows = [_summary(p) for p in _fetch_all(client, _BASE)]
+    rows = [_summary(p) for p in fetch_all(client, _BASE)]
     rows.sort(key=lambda r: r["name"] or "")
     return _envelope(rows, limit=limit, offset=offset)
 
@@ -62,10 +59,15 @@ def get_pool(client: HorizonClient, pool_id: str) -> dict:
 
 
 def _require_pool(client: HorizonClient, pool_id: str) -> dict:
-    for p in (_summary(x) for x in _fetch_all(client, _BASE)):
-        if p["id"] == pool_id:
-            return p
-    raise PoolError(f"Pool id '{sanitize(pool_id, 100)}' not found. Run pool_list for current pool ids.")
+    """Fetch one pool by id (single GET, not a collection scan); teaching refusal on 404."""
+    try:
+        return _summary(client.get(f"{_BASE}/{pool_id}"))
+    except VdiApiError as exc:
+        if exc.status_code != 404:
+            raise
+        raise PoolError(
+            f"Pool id '{sanitize(pool_id, 100)}' not found. Run pool_list for current pool ids."
+        ) from exc
 
 
 def set_pool_enabled(
@@ -92,17 +94,18 @@ def set_pool_enabled(
     return {"action": "set", "pool": pool, "enabled": enabled}
 
 
+_DETAIL_CAP = 20
+
+
 def _pool_blast(client: HorizonClient, pool_id: str) -> dict:
     """Affected-desktop and in-session-user counts for a pool — the normative push preview (HLD §15)."""
-    machines = [m for m in _fetch_all(client, _MACHINES)
-                if (m.get("desktop_pool_id") or m.get("desktop_id") or m.get("pool_id")) == pool_id]
-    sessions = [s for s in _fetch_all(client, _SESSIONS)
-                if (s.get("desktop_pool_id") or s.get("desktop_id") or s.get("pool_id")) == pool_id]
+    machines = [m for m in fetch_all(client, _MACHINES) if pool_id_of(m) == pool_id]
+    sessions = [s for s in fetch_all(client, _SESSIONS) if pool_id_of(s) == pool_id]
     users = sorted({sanitize(str(s.get("user_name") or ""), 200) for s in sessions if s.get("user_name")})
     # Count is complete; the name list is capped so a large pool's preview stays compact.
-    blast = {"affected_desktops": len(machines), "in_session_users": len(users), "users": users[:20]}
-    if len(users) > 20:
-        blast["users_note"] = f"showing 20 of {len(users)}"
+    blast = {"affected_desktops": len(machines), "in_session_users": len(users), "users": users[:_DETAIL_CAP]}
+    if len(users) > _DETAIL_CAP:
+        blast["users_note"] = f"showing {_DETAIL_CAP} of {len(users)}"
     return blast
 
 
