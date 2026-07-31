@@ -1,19 +1,21 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.zw008/vmware-vdi",
-  "description": "VMware/Omnissa Horizon VDI intelligent operations — pools, sessions, machines, entitlements, images",
-  "version": "1.0.0",
-  "packages": [
-    {
-      "registry_type": "pypi",
-      "registry_base_url": "https://pypi.org",
-      "identifier": "vmware-vdi",
-      "version": "1.0.0",
-      "transport": { "type": "stdio" }
-    }
-  ],
+  "title": "VMware VDI (Horizon)",
+  "description": "VMware/Omnissa Horizon VDI ops: pools, sessions, machines, images — 27 MCP tools.",
   "repository": {
     "url": "https://github.com/zw008/VMware-VDI",
     "source": "github"
-  }
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "vmware-vdi",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
 }
