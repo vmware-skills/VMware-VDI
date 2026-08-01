@@ -6,7 +6,7 @@ Inc., Broadcom Inc., or Omnissa, LLC.** "VMware", "Horizon", and "Omnissa" are t
 respective owners.
 
 ## Reporting Vulnerabilities
-Please open a GitHub private security advisory at https://github.com/zw008/VMware-VDI/security/advisories
+Please open a GitHub private security advisory at https://github.com/vmware-skills/VMware-VDI/security/advisories
 or email the maintainer. Do not file public issues for security reports.
 
 ## Security Design

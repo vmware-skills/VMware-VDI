@@ -109,17 +109,17 @@ REST **endpoints** are verified against the official Horizon Server API operatio
 **field names** (and a few write bodies) are defensive (`.get()` with fallbacks) and **pending validation
 against a live Connection Server**. On a field-name mismatch a list reads empty rather than crashing.
 First real-Horizon use should run `vmware-vdi init` and confirm the session/machine/pool projections;
-please [file an issue](https://github.com/zw008/VMware-VDI/issues) with raw `*_get` output if a projection
+please [file an issue](https://github.com/vmware-skills/VMware-VDI/issues) with raw `*_get` output if a projection
 looks empty. Quality: 32 regression tests, ruff clean, bandit 0, tool endpoints pinned to a verified spec.
 
 ## Companion skills
 
 Part of the VMware skill family — install the modules you need:
 
-- **[vmware-aiops](https://github.com/zw008/VMware-AIops)** — the vCenter VMs backing the desktops (power, snapshot, clone, migrate)
-- **[vmware-monitor](https://github.com/zw008/VMware-Monitor)** — read-only vSphere monitoring
-- **[vmware-nsx-security](https://github.com/zw008/VMware-NSX-Security)** — desktop network microsegmentation
-- **[vmware-aria](https://github.com/zw008/VMware-Aria)** · **[vmware-nsx](https://github.com/zw008/VMware-NSX)** · **[vmware-storage](https://github.com/zw008/VMware-Storage)** · **[vmware-vks](https://github.com/zw008/VMware-VKS)** · **[vmware-avi](https://github.com/zw008/VMware-AVI)** · **[vmware-harden](https://github.com/zw008/VMware-Harden)**
+- **[vmware-aiops](https://github.com/vmware-skills/VMware-AIops)** — the vCenter VMs backing the desktops (power, snapshot, clone, migrate)
+- **[vmware-monitor](https://github.com/vmware-skills/VMware-Monitor)** — read-only vSphere monitoring
+- **[vmware-nsx-security](https://github.com/vmware-skills/VMware-NSX-Security)** — desktop network microsegmentation
+- **[vmware-aria](https://github.com/vmware-skills/VMware-Aria)** · **[vmware-nsx](https://github.com/vmware-skills/VMware-NSX)** · **[vmware-storage](https://github.com/vmware-skills/VMware-Storage)** · **[vmware-vks](https://github.com/vmware-skills/VMware-VKS)** · **[vmware-avi](https://github.com/vmware-skills/VMware-AVI)** · **[vmware-harden](https://github.com/vmware-skills/VMware-Harden)**
 
 ## License
 

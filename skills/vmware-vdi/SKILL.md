@@ -30,9 +30,9 @@ sessions**, desktop machines, entitlements, events/health/statistics, and instan
 through the **Horizon 8 Connection Server REST API** (primary; also targets the latest Omnissa Horizon,
 which shares the same `/rest/v1` API lineage).
 
-> **Companion skills**: [vmware-aiops](https://github.com/zw008/VMware-AIops) (the vCenter VMs backing
-> the desktops), [vmware-monitor](https://github.com/zw008/VMware-Monitor) (read-only vSphere),
-> [vmware-nsx-security](https://github.com/zw008/VMware-NSX-Security) (desktop microsegmentation).
+> **Companion skills**: [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) (the vCenter VMs backing
+> the desktops), [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) (read-only vSphere),
+> [vmware-nsx-security](https://github.com/vmware-skills/VMware-NSX-Security) (desktop microsegmentation).
 
 > **Status: v1.0.0 (beta).** Endpoints are verified against the official Horizon Server API; GET-response
 > field projections are defensive and pending validation against a live Connection Server (run
@@ -182,7 +182,7 @@ Full list: `references/cli-reference.md`.
 
 ## Audit & Safety
 
-1. **Source Code** — https://github.com/zw008/VMware-VDI (MIT).
+1. **Source Code** — https://github.com/vmware-skills/VMware-VDI (MIT).
 2. **Config File Contents** — `config.yaml` holds host/username/domain only; passwords live in
    `~/.vmware-vdi/.env` (0600, obfuscated to `b64:` at rest — obfuscation, not encryption).
 3. **Webhook Data Scope** — none. This skill makes no outbound calls except to the configured

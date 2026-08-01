@@ -4,7 +4,7 @@
   "title": "VMware VDI (Horizon)",
   "description": "VMware/Omnissa Horizon VDI ops: pools, sessions, machines, images — 27 MCP tools.",
   "repository": {
-    "url": "https://github.com/zw008/VMware-VDI",
+    "url": "https://github.com/vmware-skills/VMware-VDI",
     "source": "github"
   },
   "version": "1.0.0",

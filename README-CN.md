@@ -34,9 +34,9 @@ vmware-vdi doctor
 ```
 
 ## Companion Skills
-- [vmware-aiops](https://github.com/zw008/VMware-AIops) —— 桌面背后的 vCenter 虚机
-- [vmware-monitor](https://github.com/zw008/VMware-Monitor) —— 只读 vSphere 监控
-- [vmware-nsx-security](https://github.com/zw008/VMware-NSX-Security) —— 桌面微隔离
+- [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) —— 桌面背后的 vCenter 虚机
+- [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) —— 只读 vSphere 监控
+- [vmware-nsx-security](https://github.com/vmware-skills/VMware-NSX-Security) —— 桌面微隔离
 
 ## License
 MIT
