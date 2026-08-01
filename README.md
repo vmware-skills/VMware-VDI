@@ -1,4 +1,4 @@
-<!-- mcp-name: io.github.zw008/vmware-vdi -->
+<!-- mcp-name: io.github.vmware-skills/vmware-vdi -->
 
 # VMware VDI (Horizon)
 

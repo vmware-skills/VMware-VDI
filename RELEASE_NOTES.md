@@ -1,3 +1,9 @@
+## v1.0.1 — moved to vmware-skills org + MCP Registry namespace io.github.vmware-skills/vmware-vdi
+
+Repo transferred from github.com/zw008 to github.com/vmware-skills (redirects preserve old links).
+MCP Registry server renamed to `io.github.vmware-skills/*`; the old `io.github.zw008/*` entry is deprecated.
+All in-repo links updated. No functional code change on this line beyond the org move.
+
 ## v1.0.0 (beta) — first release
 
 The family's 14th skill: **vmware-vdi** — VMware/Omnissa Horizon VDI intelligent operations through the
