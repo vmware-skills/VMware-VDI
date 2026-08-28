@@ -11,6 +11,7 @@ import logging
 
 from mcp.server.fastmcp import FastMCP
 
+from vmware_vdi import __version__
 from vmware_vdi.config import ConfigError
 from vmware_vdi.connection import ConnectionManager, VdiApiError
 from vmware_vdi.notify.audit import AuditLogger
@@ -19,6 +20,11 @@ from vmware_vdi.ops._errors import VdiOpsError
 logger = logging.getLogger("vmware_vdi.mcp_server")
 
 mcp = FastMCP("vmware-vdi")
+
+# FastMCP takes no version argument and leaves the lowlevel server's at
+# None, which makes `initialize` answer with the MCP SDK's version rather
+# than ours. Set it so a client can tell which release it is talking to.
+mcp._mcp_server.version = __version__
 
 # The shared legacy audit logger for write tools (the authoritative sink is
 # ~/.vmware/audit.db via @vmware_tool; this dual-writes for back-compat).
