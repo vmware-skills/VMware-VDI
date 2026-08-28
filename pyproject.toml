@@ -41,6 +41,13 @@ markers = [
 ]
 addopts = "-m 'not capability'"
 
+
+[project.urls]
+Homepage = "https://github.com/vmware-skills/VMware-VDI"
+Repository = "https://github.com/vmware-skills/VMware-VDI"
+Issues = "https://github.com/vmware-skills/VMware-VDI/issues"
+Changelog = "https://github.com/vmware-skills/VMware-VDI/blob/main/RELEASE_NOTES.md"
+
 [dependency-groups]
 dev = [
     "pytest>=8.0,<10.0",
