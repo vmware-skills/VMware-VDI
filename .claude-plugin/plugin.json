@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "vmware-vdi",
+  "displayName": "VMware VDI",
+  "version": "1.0.1",
+  "description": "VMware/Omnissa Horizon VDI ops: pools, sessions, machines, images — 27 MCP tools.",
+  "author": {
+    "name": "Wei Zhou",
+    "email": "zhouwei008@gmail.com",
+    "url": "https://github.com/vmware-skills"
+  },
+  "homepage": "https://github.com/vmware-skills/VMware-VDI",
+  "repository": "https://github.com/vmware-skills/VMware-VDI",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "vdi",
+    "vmware",
+    "vsphere"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vmware-vdi": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-vdi==1.0.1",
+        "vmware-vdi-mcp"
+      ]
+    }
+  }
+}
