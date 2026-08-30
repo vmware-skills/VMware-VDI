@@ -2,19 +2,34 @@
 
 from __future__ import annotations
 
-from vmware_vdi.config import CONFIG_FILE, ConfigError, load_config
+from vmware_vdi.config import ConfigError, load_config, resolve_config_path
 
 
 def _check_config() -> tuple[bool, str]:
-    if not CONFIG_FILE.exists():
-        return False, f"Config file missing — copy config.example.yaml to {CONFIG_FILE}"
+    """Report on the file the tools will open, not on the default path.
+
+    This asked whether the default existed, while load_config() — which the two
+    checks below call, and which every tool calls — honours $VMWARE_VDI_CONFIG.
+    So with the variable naming a good config and nothing at the default, the
+    doctor answered "Config file missing" and told the operator to create a
+    second file that would then be ignored, in the same report that went on to
+    list the real file's targets (2026-08-30). The path is named in both the
+    pass and the fail answer for the same reason: a verdict about an unnamed
+    file is not one the reader can check.
+    """
+    path = resolve_config_path()
+    if not path.exists():
+        return False, f"Config file missing — copy config.example.yaml to {path}"
     try:
         cfg = load_config()
     except Exception as exc:  # noqa: BLE001 — doctor reports, never raises
         return False, f"Config unreadable: {exc}"
     if not cfg.targets:
-        return False, "No targets defined in config.yaml"
-    return True, f"{len(cfg.targets)} target(s) configured; default={cfg.default_target or '(none)'}"
+        return False, f"No targets defined in {path}"
+    return True, (
+        f"{path}: {len(cfg.targets)} target(s) configured; "
+        f"default={cfg.default_target or '(none)'}"
+    )
 
 
 def _check_credentials() -> tuple[bool, str]:

@@ -180,10 +180,25 @@ class AppConfig:
         return cfg
 
 
+def resolve_config_path(config_path: Path | None = None) -> Path:
+    """Which config file this skill will read: explicit arg, env var, default.
+
+    The single place that precedence lives. It used to be written out here and
+    again in :func:`vmware_vdi.doctor._check_config`, whose copy had no env-var
+    clause — so with ``VMWARE_VDI_CONFIG`` naming a perfectly good config, the
+    doctor answered "Config file missing" and pointed at the default, while the
+    two checks below it read the real file and listed its targets (2026-08-30).
+    Two copies of a rule do not disagree loudly; they disagree slowly (形态 #6).
+    """
+    if config_path is not None:
+        return config_path
+    env_override = os.environ.get("VMWARE_VDI_CONFIG")
+    return Path(env_override) if env_override else CONFIG_FILE
+
+
 def load_config(config_path: Path | None = None) -> AppConfig:
     """Load config from YAML, with env var overrides for credentials."""
-    env_override = os.environ.get("VMWARE_VDI_CONFIG")
-    path = config_path or (Path(env_override) if env_override else CONFIG_FILE)
+    path = resolve_config_path(config_path)
 
     if not path.exists():
         raise FileNotFoundError(
