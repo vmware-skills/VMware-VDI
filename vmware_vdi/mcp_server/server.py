@@ -37,6 +37,18 @@ from vmware_vdi.mcp_server.tools import (  # noqa: F401
 __all__ = ["_audit", "_get_connection", "_safe_error", "_target_name", "main", "mcp"]
 
 
+from vmware_policy import describe_tool_parameters
+
+# The docstrings in the tool modules imported above are the schema.
+# `describe_tool_parameters` copies each `Args:` entry into the JSON schema an
+# agent actually reads, and closes the object. Without it every parameter
+# reaches the model as a bare name and a type, which is how a wrong guess
+# becomes an unfiltered result or a silent zero-row answer instead of an error
+# (real-hardware round, 2026-08-30). It runs here, after the imports that
+# register the tools, because there is nothing to describe before them.
+_DESCRIBED_PARAMS = describe_tool_parameters(mcp._tool_manager._tools)
+
+
 def main() -> None:
     """Console-script entry point: serve the registered tools over stdio."""
     mcp.run()
