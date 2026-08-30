@@ -136,8 +136,12 @@ rows from `items` and check `truncated` before concluding a listing is complete;
 `truncated:false` means checked-and-none, not a failure. Lists are fetched with server-side pagination.
 
 **Blast radius (normative)**: `pool_push_image` recreates **every desktop in the pool** — the highest
-single-call blast radius in the family. Its preview states affected-desktop and in-session-user counts
-before any confirm. `session_logoff` / `machine_reset` / `machine_remove` state their affected users/
+single-call blast radius in the family. Its preview states affected-desktop and in-session counts
+before any confirm, plus `blast_radius.occupancy`: `determined` when those counts can be believed,
+`unknown` when session rows exist that belong to neither a desktop pool nor a farm and so cannot be
+ruled out of this pool. An `unknown` occupancy makes `in_session_count` a lower bound and refuses
+`confirm=true` — check `session_list`, or pass `acknowledge_unknown_occupancy=true`, which is audited.
+`session_logoff` / `machine_reset` / `machine_remove` state their affected users/
 machines and require double confirmation at the CLI.
 
 **Read/write split**: 16 read-only tools (`[READ]` docstring marker), 11 modify state. All writes are

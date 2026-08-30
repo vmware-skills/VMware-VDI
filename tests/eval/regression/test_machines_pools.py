@@ -49,15 +49,15 @@ class FakeClient:
             mid = path.rsplit("/", 1)[-1]
             m = [x for x in _MACHINES if x["id"] == mid]
             if not m:
-                raise VdiApiError("HTTP 404", status_code=404)
+                raise VdiApiError("HTTP 404", status_code=404, path=path)
             return m[0]
         if path.startswith("/inventory/v1/desktop-pools/"):
             pid = path.rsplit("/", 1)[-1]
             p = [x for x in _POOLS if x["id"] == pid]
             if not p:
-                raise VdiApiError("HTTP 404", status_code=404)
+                raise VdiApiError("HTTP 404", status_code=404, path=path)
             return p[0]
-        raise VdiApiError("HTTP 404", status_code=404)
+        raise VdiApiError("HTTP 404", status_code=404, path=path)
 
     def post(self, path, json_data=None, *, retries=1):
         self.calls.append(("POST", path, json_data))

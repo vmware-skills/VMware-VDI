@@ -24,6 +24,7 @@ from vmware_policy import sanitize
 from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
+from vmware_vdi.ops._fields import user_of
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _BASE = "/inventory/v1/sessions"
@@ -37,7 +38,10 @@ def _summary(s: dict) -> dict:
     """High-signal projection of one session. Defensive across documented field names."""
     return {
         "id": s.get("id"),
-        "user": sanitize(str(s.get("user_name") or s.get("username") or ""), 200),
+        # Horizon 8's documented SessionInfo has no user_name — it carries user_id.
+        # See ops._fields.user_of; reading only the readable names made the `user`
+        # filter here, and pool_push_image's occupancy guard, match nothing.
+        "user": sanitize(user_of(s), 200),
         "type": s.get("session_type") or s.get("type"),  # DESKTOP / APPLICATION
         "state": s.get("session_state") or s.get("state"),  # CONNECTED / DISCONNECTED / PENDING
         "protocol": s.get("session_protocol") or s.get("protocol"),  # BLAST / PCOIP / RDP
@@ -80,14 +84,19 @@ def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str
 
     Explicit ids are validated with per-id GETs — no full-estate fetch for a targeted
     logoff. A user lookup needs the full list to substring-match.
+
+    Only a 404 *from the session GET* means the id is wrong; a failed login raises
+    the same status from inside this call, and calling that a missing session sends
+    the operator to session_list, which logs in first. See ``pools._require_pool``.
     """
     if session_ids:
         found, missing = [], []
         for sid in session_ids:
+            path = f"{_BASE}/{sid}"
             try:
-                found.append(_summary(client.get(f"{_BASE}/{sid}")))
+                found.append(_summary(client.get(path)))
             except VdiApiError as exc:
-                if exc.status_code != 404:
+                if exc.status_code != 404 or exc.path != path:
                     raise
                 missing.append(sid)
         if missing:

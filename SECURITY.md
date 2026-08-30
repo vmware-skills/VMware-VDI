@@ -26,7 +26,10 @@ control cannot be stepped around by a shell.
 `session_logoff`, `machine_reset`, `machine_remove`, `pool_set_enabled` (disable), `entitlement_remove`,
 `pool_push_image`, and `task_cancel` preview their blast radius, require CLI double-confirmation, and
 support `--dry-run`. `pool_push_image` (recreates every desktop in a pool) reports affected-desktop and
-in-session-user counts before any confirm.
+in-session counts before any confirm, and reports whether occupancy could be established at all: when
+session rows cannot be attributed to a pool or farm the count is a lower bound, so the confirm is
+refused rather than passed on an unverified zero. The override
+(`--acknowledge-unknown-occupancy` / `acknowledge_unknown_occupancy=true`) is audited.
 
 ### SSL/TLS Verification
 On by default. `verify_ssl: false` is per-target and intended only for self-signed lab certificates.

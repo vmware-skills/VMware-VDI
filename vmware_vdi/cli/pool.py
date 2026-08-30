@@ -69,6 +69,13 @@ def pool_set_enabled_cmd(
 def pool_push_image_cmd(
     pool_id: Annotated[str, typer.Option("--id", help="Pool id")],
     force_logoff: Annotated[bool, typer.Option("--force-logoff", help="FORCE_LOGOFF instead of WAIT_FOR_LOGOFF")] = False,
+    acknowledge_unknown_occupancy: Annotated[
+        bool,
+        typer.Option(
+            "--acknowledge-unknown-occupancy",
+            help="Push even when who is logged in could not be determined (audited).",
+        ),
+    ] = False,
     target: TargetOption = None,
     config: ConfigOption = None,
     dry_run: DryRunOption = False,
@@ -80,13 +87,23 @@ def pool_push_image_cmd(
     client, tname = _get_connection(target, config)
     preview = push_image(client, pool_id=pool_id, logoff_policy=policy, confirm=False)
     b = preview["blast_radius"]
-    console.print(
-        f"[bold red]BLAST RADIUS:[/] recreates [cyan]{b['affected_desktops']}[/] desktop(s), "
-        f"affecting [cyan]{b['in_session_users']}[/] logged-in user(s): {', '.join(b['users']) or '-'}"
-    )
+    if b["occupancy"] == "unknown":
+        # Never print a count here: the number is a lower bound, and printed next to
+        # "BLAST RADIUS" a lower bound of 0 reads as an all-clear.
+        console.print(
+            f"[bold red]BLAST RADIUS:[/] recreates [cyan]{b['affected_desktops']}[/] desktop(s); "
+            f"[bold yellow]who is logged in could not be determined[/] — {b['occupancy_note']}"
+        )
+    else:
+        console.print(
+            f"[bold red]BLAST RADIUS:[/] recreates [cyan]{b['affected_desktops']}[/] desktop(s), "
+            f"affecting [cyan]{b['in_session_count']}[/] logged-in session(s): {', '.join(b['users']) or '-'}"
+        )
     if dry_run:
         console.print("[magenta][DRY-RUN] no changes made.[/]")
         return
     _double_confirm("push image to", pool_id, _resolve_target(target), resource_type="pool")
-    push_image(client, pool_id=pool_id, logoff_policy=policy, confirm=True, audit_logger=_audit, target_name=tname)
+    push_image(client, pool_id=pool_id, logoff_policy=policy, confirm=True,
+               acknowledge_unknown_occupancy=acknowledge_unknown_occupancy,
+               audit_logger=_audit, target_name=tname)
     console.print("[green]image push scheduled[/]")

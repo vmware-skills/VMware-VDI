@@ -24,7 +24,10 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 | **任务** | 任务状态;镜像推送、任务取消 |
 
 破坏性写操作预览爆炸半径、CLI 双重确认、`--dry-run`、统一审计到 `~/.vmware/audit.db`。
-`pool_push_image` 重建整池桌面,爆炸半径最高,预览报受影响桌面数 + 在线用户数。
+`pool_push_image` 重建整池桌面,爆炸半径最高,预览报受影响桌面数 + 在线会话数,并给出 `occupancy`:
+`determined` 表示这两个数可信,`unknown` 表示存在既不属于任何桌面池、也不属于任何农场的会话行。
+`unknown` 时在线会话数只是下限,confirm 会被拒绝而不是按"未经核实的 0"放行;要强推须显式
+`--acknowledge-unknown-occupancy`,该确认会写进审计记录。
 
 ## 快速开始
 ```bash

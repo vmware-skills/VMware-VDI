@@ -71,15 +71,21 @@ def get_machine(client: HorizonClient, machine_id: str) -> dict:
 
 
 def _resolve(client: HorizonClient, machine_ids: list[str]) -> list[dict]:
-    """Validate explicit ids with per-id GETs — no full-estate fetch for a targeted action."""
+    """Validate explicit ids with per-id GETs — no full-estate fetch for a targeted action.
+
+    Only a 404 *from the machine GET* means the id is wrong; a failed login raises
+    the same status from inside this call, and calling that a missing machine sends
+    the operator to machine_list, which logs in first. See ``pools._require_pool``.
+    """
     if not machine_ids:
         raise MachineError("Provide at least one machine_id. Run machine_list to find ids.")
     found, missing = [], []
     for mid in machine_ids:
+        path = f"{_BASE}/{mid}"
         try:
-            found.append(_summary(client.get(f"{_BASE}/{mid}")))
+            found.append(_summary(client.get(path)))
         except VdiApiError as exc:
-            if exc.status_code != 404:
+            if exc.status_code != 404 or exc.path != path:
                 raise
             missing.append(mid)
     if missing:

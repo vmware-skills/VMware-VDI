@@ -86,25 +86,34 @@ def pool_push_image(
     stop_on_error: bool = True,
     logoff_policy: str = "WAIT_FOR_LOGOFF",
     confirm: bool = False,
+    acknowledge_unknown_occupancy: bool = False,
     target: Optional[str] = None,
 ) -> dict:
     """[WRITE] Apply the pending image to an instant-clone pool — RECREATES EVERY DESKTOP in it.
 
-    Highest blast radius in the family: the preview states affected-desktop and in-session-user
-    counts before you confirm. confirm=True schedules the apply. Audited.
+    Highest blast radius in the family: the preview states affected-desktop and in-session
+    counts before you confirm, plus blast_radius.occupancy — "determined" when those counts
+    can be believed, "unknown" when sessions exist that cannot be attributed to any pool or
+    farm. confirm=True schedules the apply. Audited.
 
     Args:
         pool_id: The pool id (from pool_list).
         stop_on_error: Halt the rolling push on the first machine error (default True).
         logoff_policy: WAIT_FOR_LOGOFF (default) or FORCE_LOGOFF.
         confirm: False previews the blast radius; True schedules the push.
+        acknowledge_unknown_occupancy: Only consulted when the preview reports
+            blast_radius.occupancy == "unknown", where in_session_count is a lower bound
+            rather than a count and confirm=True is refused. Setting it True pushes on an
+            unverified occupancy — check session_list first; the acknowledgement is
+            recorded in the audit row. Ignored when occupancy is "determined".
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
         from vmware_vdi.ops.pools import push_image
 
         return push_image(_get_connection(target), pool_id=pool_id, stop_on_error=stop_on_error,
-                          logoff_policy=logoff_policy, confirm=confirm, audit_logger=_audit,
-                          target_name=_target_name(target))
+                          logoff_policy=logoff_policy, confirm=confirm,
+                          acknowledge_unknown_occupancy=acknowledge_unknown_occupancy,
+                          audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
         return {"error": _safe_error(exc, "pool_push_image")}

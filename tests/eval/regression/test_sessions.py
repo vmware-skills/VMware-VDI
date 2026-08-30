@@ -51,7 +51,7 @@ class FakeClient:
         sid = path.rsplit("/", 1)[-1]
         match = [r for r in self._rows if r["id"] == sid]
         if not match:
-            raise VdiApiError("Horizon returned HTTP 404. Verify the id...", status_code=404)
+            raise VdiApiError("Horizon returned HTTP 404. Verify the id...", status_code=404, path=path)
         return match[0]
 
     def post(self, path, json_data=None, *, retries=1):

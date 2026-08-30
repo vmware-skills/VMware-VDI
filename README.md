@@ -38,7 +38,10 @@ previews its blast radius, and is authorized by the Horizon account's own RBAC r
 Reads are strictly non-destructive. Writes **preview their blast radius**, double-confirm at the CLI, and
 are audit-logged to `~/.vmware/audit.db`. `pool_push_image` recreates *every desktop in a pool* — the
 highest single-call blast radius in the family — and its preview states affected-desktop and
-in-session-user counts before any confirm.
+in-session counts before any confirm, together with `occupancy`: `determined` when those counts
+can be believed, `unknown` when sessions exist that cannot be attributed to any pool or farm. An
+`unknown` occupancy refuses the confirm rather than reporting an unverified zero; overriding it
+needs `--acknowledge-unknown-occupancy` and is recorded in the audit row.
 
 ## Quick start
 
