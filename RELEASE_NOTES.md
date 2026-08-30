@@ -1,3 +1,34 @@
+## v1.0.3 — two messages that sent you in a circle
+
+Found against a real VCF 9.1 estate.
+
+**A 404 on login was diagnosed as a bad object id.** The remedy printed was
+"list the parent collection first (e.g. the pool_list / session_list /
+machine_list tools) and copy an exact id". A login has no id, and `pool_list`
+logs in first — it is the call that just failed. Following the advice
+reproduced the error, one API call per lap. On `POST /rest/login` a 404 means
+nothing answers at that path: wrong host or port, or a Connection Server that
+predates the REST API entirely (it is Horizon 8; Horizon 7 has no `/rest`),
+which is the most common real cause and is now what the message says. 405 gets
+the same treatment, since a proxy that forwards the path but not the method
+answers that.
+
+**`doctor` reported "Config file missing" while reading the real config.** With
+`VMWARE_VDI_CONFIG` naming a perfectly good file, the config check looked at the
+default path, announced it was missing, and told the user to copy
+`config.example.yaml` to `~/.vmware-vdi/` — in the same report that went on to
+list the real file's three targets. Following that advice creates a second
+config which is then ignored. The precedence now lives in one
+`resolve_config_path` that every check uses.
+
+Also: `server.json` never started the MCP server — it carried only the package
+identifier, so a registry client composed `uvx vmware-vdi`, which runs the CLI
+and exits.
+
+Still beta in substance: the REST endpoints are verified against the official
+Horizon Server API, but GET response field names and a few write bodies remain
+defensive, pending a real Connection Server.
+
 ## v1.0.2 — two wrong numbers: the server's own version, and the advertised tool count
 
 Both defects were invisible to the test suites and both were user-facing.
