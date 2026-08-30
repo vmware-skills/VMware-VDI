@@ -1,3 +1,35 @@
+## v1.0.5 — the guard on the most destructive call was reading a field that does not exist
+
+The guard on the family's most destructive operation was measuring nothing.
+`pool_push_image` counts users in session before pushing an image to every
+desktop in a pool, and it read `user_name` — a field the Horizon API does not
+have. The real one is `user_id`. Every pool looked unoccupied, and all five
+existing tests mocked the non-existent field.
+
+Occupancy that cannot be determined is no longer reported as zero: it is
+`unknown`, and an unknown occupancy refuses `confirm=True` rather than pushing
+through it, with an explicit override that lands in the audit row.
+
+Eight write tools also still turned a login 404 into "Pool not found, run
+pool_list" — the circular advice the previous release removed from the read
+path, alive on the write path.
+
+**The `vmware-policy` floor moves to >=1.11.0.** Policy 1.11.0 stops the engine
+failing open: on a host whose locale is not UTF-8, reading `rules.yaml` raised a
+decode error that was swallowed, and a `freeze-production-writes` rule came back
+ALLOW. No new API is used here, so the floor could have stayed — it is raised
+because leaving it low means a user resolving 1.10.0 keeps the permissive engine
+and the fix never reaches them. One behaviour travels with it: on a host whose
+rules file cannot be read, operations move from all-allowed to all-denied.
+`VMWARE_POLICY_DISABLED=1` is checked above the rules, so the escape hatch does
+not itself depend on them loading.
+
+Also in this release: the suite no longer appends to the operator's real
+`~/.vmware/audit.db`. It held over 30,000 rows dominated by tool names nobody
+had invoked, including 1,400 entries for a destructive operation that never
+happened — an audit trail carrying test fiction cannot answer the question it is
+kept for.
+
 ## v1.0.4 — the schema an agent reads now carries the descriptions
 
 Parameter descriptions reach the JSON schema for the first time. An MCP client

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vmware-vdi"
-version = "1.0.4"
+version = "1.0.5"
 description = "VMware/Omnissa Horizon VDI intelligent operations — pools, sessions, machines, entitlements, images (MCP + CLI)"
 readme = "README.md"
 license = "MIT"

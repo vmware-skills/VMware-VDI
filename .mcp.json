@@ -5,7 +5,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "vmware-vdi==1.0.4",
+        "vmware-vdi==1.0.5",
         "vmware-vdi-mcp"
       ]
     }
