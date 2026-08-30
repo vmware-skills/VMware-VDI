@@ -140,8 +140,26 @@ class HorizonClient:
                     attempt += 1
                     time.sleep(_RETRY_DELAY_SEC)
                     continue
+                if status in (404, 405):
+                    # _hint_for_status is written for resource calls, where 404
+                    # genuinely means "wrong id". Reached from here it told the
+                    # user to run pool_list and copy an id — a login has no id,
+                    # and pool_list logs in first, so it is the call that just
+                    # failed. Following the advice reproduced the error
+                    # (2026-08-30). On the login endpoint the same status means
+                    # nothing answers at that path. Kept terse: the MCP layer
+                    # renders exceptions through sanitize(str(exc), 300), and a
+                    # longer message loses its own closing remedy.
+                    hint = (
+                        f"Nothing answers at {self._base_url}/login — not a "
+                        f"credential problem. Check host and port in config.yaml, "
+                        f"and that this is a Horizon 8 Connection Server (the "
+                        f"/rest API does not exist on Horizon 7)."
+                    )
+                else:
+                    hint = _hint_for_status(status)
                 raise VdiApiError(
-                    f"Horizon login failed (HTTP {status}). {_hint_for_status(status)}",
+                    f"Horizon login failed (HTTP {status}). {hint}",
                     status_code=status,
                     method="POST",
                     path="/login",
