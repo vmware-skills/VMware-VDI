@@ -32,7 +32,18 @@ def pool_list(limit: int = 50, offset: int = 0, target: Optional[str] = None) ->
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
 def pool_get(pool_id: str, target: Optional[str] = None) -> dict:
-    """[READ] Full detail for one desktop pool by id (teaching 404 on a wrong id)."""
+    """[READ] One desktop pool by id (teaching 404 on a wrong id).
+
+    Same projection as one pool_list row — id, name, type, enabled, provisioning_enabled,
+    assignment — fetched with a single GET instead of listing every pool. Use it to
+    re-check one pool after a write, or when you already hold an id.
+
+    Args:
+        pool_id: Horizon desktop-pool id (the opaque 'id' of a pool_list row, not the
+            pool's display name). A wrong id returns a 404 whose hint tells you to
+            re-run pool_list for exact ids.
+        target: Horizon target from config.yaml; omit to use the default.
+    """
     try:
         from vmware_vdi.ops.pools import get_pool
 

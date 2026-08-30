@@ -42,7 +42,18 @@ def machine_list(
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
 def machine_get(machine_id: str, target: Optional[str] = None) -> dict:
-    """[READ] Full detail for one Horizon desktop machine by id (teaching 404 on a wrong id)."""
+    """[READ] One Horizon desktop machine by id (teaching 404 on a wrong id).
+
+    Same projection as one machine_list row — id, name, pool_id, state, assigned user,
+    agent_version, base_image — fetched with a single GET instead of scanning the estate.
+    Use it to re-check one machine after a write, or when you already hold an id.
+
+    Args:
+        machine_id: Horizon machine id (the opaque 'id' of a machine_list row, not the
+            desktop's display name and not the vCenter VM name). A wrong id returns a
+            404 whose hint tells you to re-run machine_list for exact ids.
+        target: Horizon target from config.yaml; omit to use the default.
+    """
     try:
         from vmware_vdi.ops.machines import get_machine
 
