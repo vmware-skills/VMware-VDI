@@ -37,7 +37,12 @@ from vmware_vdi.mcp_server.tools import (  # noqa: F401
 __all__ = ["_audit", "_get_connection", "_safe_error", "_target_name", "main", "mcp"]
 
 
-from vmware_policy import describe_tool_parameters
+from vmware_vdi.config import CONFIG_FILE, load_config
+from vmware_policy import (
+    describe_tool_parameters,
+    mtime_cached_loader,
+    set_environment_resolver,
+)
 
 # The docstrings in the tool modules imported above are the schema.
 # `describe_tool_parameters` copies each `Args:` entry into the JSON schema an
@@ -47,6 +52,36 @@ from vmware_policy import describe_tool_parameters
 # (real-hardware round, 2026-08-30). It runs here, after the imports that
 # register the tools, because there is nothing to describe before them.
 _DESCRIBED_PARAMS = describe_tool_parameters(mcp._tool_manager._tools)
+
+
+# ── environment resolver ─────────────────────────────────────────────────────
+#
+# Policy rules scope by environment ("irreversible work in production needs a
+# second person"), and vmware_policy cannot read this skill's config itself —
+# registering this lookup is what lets those rules fire at all. Without it every
+# target reads as undeclared and no environment-scoped rule ever matches.
+#
+# This skill's config has carried `environment_for` since it shipped; the
+# registration was simply never wired, and the family gate that should have
+# caught it did not list this repo. Both are fixed together (2026-08-30).
+_cached_config = mtime_cached_loader("VMWARE_VDI_CONFIG", CONFIG_FILE, load_config)
+
+
+def _environment_for(target: str | None) -> str:
+    """The environment label for ``target``, or "" when it cannot be read.
+
+    An unreadable config means *undeclared*, not *production*: guessing the
+    strict label here would refuse work the operator never scoped, and guessing
+    the loose one would be the fail-open this family keeps finding. Undeclared
+    is the honest answer and the one vmware_policy documents.
+    """
+    try:
+        return _cached_config().environment_for(target)
+    except Exception:  # noqa: BLE001 — an unreadable config means "undeclared"
+        return ""
+
+
+set_environment_resolver(_environment_for)
 
 
 def main() -> None:
