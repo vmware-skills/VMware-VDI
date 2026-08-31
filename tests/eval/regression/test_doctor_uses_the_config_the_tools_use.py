@@ -82,7 +82,7 @@ def sandbox(tmp_path, monkeypatch):
 
 def test_the_env_var_decides_which_file_is_resolved(sandbox, tmp_path, monkeypatch):
     elsewhere = tmp_path / "elsewhere.yaml"
-    elsewhere.write_text(_THREE_TARGETS)
+    elsewhere.write_text(_THREE_TARGETS, encoding="utf-8")
     monkeypatch.setenv("VMWARE_VDI_CONFIG", str(elsewhere))
 
     assert cfg.resolve_config_path() == elsewhere
@@ -92,7 +92,7 @@ def test_an_explicit_path_still_beats_the_env_var(sandbox, tmp_path, monkeypatch
     """The control on precedence: an explicit path is the caller saying which
     file they mean, and it has to keep winning."""
     explicit = tmp_path / "explicit.yaml"
-    explicit.write_text(_ONE_TARGET)
+    explicit.write_text(_ONE_TARGET, encoding="utf-8")
     monkeypatch.setenv("VMWARE_VDI_CONFIG", str(tmp_path / "ignored.yaml"))
 
     assert cfg.resolve_config_path(explicit) == explicit
@@ -112,7 +112,7 @@ def test_doctor_does_not_call_a_working_config_missing(sandbox, tmp_path, monkey
     file and list its three targets, in the same report.
     """
     elsewhere = tmp_path / "elsewhere.yaml"
-    elsewhere.write_text(_THREE_TARGETS)
+    elsewhere.write_text(_THREE_TARGETS, encoding="utf-8")
     monkeypatch.setenv("VMWARE_VDI_CONFIG", str(elsewhere))
     assert len(cfg.load_config().targets) == 3, "the tools can read this config"
 
@@ -136,7 +136,7 @@ def test_doctor_still_fails_when_the_resolved_file_is_missing(
     tools will open, so the answer is a failure that names the file that is
     actually missing.
     """
-    sandbox.write_text(_ONE_TARGET)
+    sandbox.write_text(_ONE_TARGET, encoding="utf-8")
     missing = tmp_path / "not-there.yaml"
     monkeypatch.setenv("VMWARE_VDI_CONFIG", str(missing))
 
@@ -148,7 +148,7 @@ def test_doctor_still_fails_when_the_resolved_file_is_missing(
 
 def test_with_no_env_var_the_default_is_still_what_is_checked(sandbox):
     """And the third control: unset, nothing about the report changes."""
-    sandbox.write_text(_ONE_TARGET)
+    sandbox.write_text(_ONE_TARGET, encoding="utf-8")
 
     ok, msg = doc._check_config()
 

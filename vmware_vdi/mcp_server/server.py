@@ -42,6 +42,7 @@ from vmware_policy import (
     describe_tool_parameters,
     mtime_cached_loader,
     set_environment_resolver,
+    skill_name,
 )
 
 # The docstrings in the tool modules imported above are the schema.
@@ -81,7 +82,12 @@ def _environment_for(target: str | None) -> str:
         return ""
 
 
-set_environment_resolver(_environment_for)
+# Keyed by skill: the registry used to be one process-global slot, and a
+# bare `import` of any sibling's server module replaced whichever resolver
+# was there -- measured turning a freeze-production-writes rule from DENY
+# to ALLOW. Keyed, a resolver only ever answers for its own skill, so
+# registering at import time is safe again.
+set_environment_resolver(_environment_for, skill=skill_name(__name__))
 
 
 def main() -> None:
