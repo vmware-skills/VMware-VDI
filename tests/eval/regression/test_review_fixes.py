@@ -6,6 +6,8 @@ re-introduction fails here (踩坑 #40 — verify a fix with the bug's own trigg
 
 from __future__ import annotations
 
+from vmware_policy.fsperms import assert_owner_only
+
 import base64
 
 import pytest
@@ -138,4 +140,4 @@ def test_h1_write_env_sets_os_environ(tmp_path, monkeypatch):
 
     assert os.environ[key].startswith("b64:")
     assert base64.b64decode(os.environ[key][4:]).decode() == "S3cr3t!"
-    assert (tmp_path / ".env").stat().st_mode & 0o777 == 0o600
+    assert_owner_only(tmp_path / ".env")
