@@ -1,0 +1,24 @@
+{
+  "id": "vmware-vdi",
+  "name": "VMware VDI",
+  "description": "VMware/Omnissa Horizon VDI ops: pools, sessions, machines, images — 27 MCP tools.",
+  "skills": [
+    "./skills"
+  ],
+  "mcpServers": {
+    "vmware-vdi": {
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-vdi==1.1.0",
+        "vmware-vdi-mcp"
+      ]
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
