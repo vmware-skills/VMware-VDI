@@ -55,7 +55,7 @@ def session_list_cmd(
 
 @session_app.command("logoff")
 @cli_errors
-@guarded(risk_level="high")
+@guarded("session_logoff", risk_level="high")
 def session_logoff_cmd(
     session_id: Annotated[str, typer.Option("--id", help="Session id")] = "",
     user: Annotated[str, typer.Option("--user", help="Log off all sessions of this AD user")] = "",
@@ -84,7 +84,7 @@ def session_logoff_cmd(
 
 @session_app.command("disconnect")
 @cli_errors
-@guarded(risk_level="medium")
+@guarded("session_disconnect", risk_level="medium")
 def session_disconnect_cmd(
     session_id: Annotated[str, typer.Option("--id", help="Session id")] = "",
     user: Annotated[str, typer.Option("--user", help="Disconnect all sessions of this AD user")] = "",
@@ -113,7 +113,7 @@ def session_disconnect_cmd(
 
 @session_app.command("message")
 @cli_errors
-@guarded(risk_level="low")
+@guarded("session_send_message", risk_level="low")
 def session_message_cmd(
     message: Annotated[str, typer.Argument(help="Message text")],
     user: Annotated[str, typer.Option("--user", help="Message all sessions of this AD user")] = "",

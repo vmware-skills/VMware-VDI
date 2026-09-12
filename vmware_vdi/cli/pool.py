@@ -38,7 +38,7 @@ def pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> N
 
 @pool_app.command("set-enabled")
 @cli_errors
-@guarded(risk_level="medium")
+@guarded("pool_set_enabled", risk_level="medium")
 def pool_set_enabled_cmd(
     pool_id: Annotated[str, typer.Option("--id", help="Pool id")],
     enabled: Annotated[bool, typer.Option("--enable/--disable", help="Enable or disable the pool")],
@@ -65,7 +65,7 @@ def pool_set_enabled_cmd(
 
 @pool_app.command("push-image")
 @cli_errors
-@guarded(risk_level="high")
+@guarded("pool_push_image", risk_level="high")
 def pool_push_image_cmd(
     pool_id: Annotated[str, typer.Option("--id", help="Pool id")],
     force_logoff: Annotated[bool, typer.Option("--force-logoff", help="FORCE_LOGOFF instead of WAIT_FOR_LOGOFF")] = False,

@@ -77,6 +77,9 @@ from vmware_vdi.cli.catalog import (
     task_app,
 )
 import sys
+# Registers this skill's environment resolver, so environment-scoped policy
+# rules apply to @guarded CLI writes exactly as they do to MCP tools.
+import vmware_vdi.policy_environment  # noqa: F401 — imported to register the resolver; do not remove
 
 
 def _harden_console_encoding() -> None:

@@ -16,7 +16,7 @@ installer:
   package: vmware-vdi
 allowed-tools:
   - Bash
-metadata: {"openclaw":{"requires":{"env":["VMWARE_VDI_CONFIG"],"bins":["vmware-vdi"],"config":["~/.vmware-vdi/config.yaml"]},"primaryEnv":"VMWARE_VDI_CONFIG"}}
+metadata: {"openclaw":{"requires":{"anyBins":["vmware-vdi","uvx"]},"optional":{"env":["VMWARE_VDI_CONFIG"]}}}
 ---
 
 # VMware VDI (Horizon)
@@ -55,7 +55,7 @@ radius, are double-confirmed at the CLI, and are audit-logged.
 ## Quick Install
 
 ```bash
-uv tool install vmware-vdi
+uv tool install vmware-vdi==1.1.0
 vmware-vdi init      # friendly setup: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 ```

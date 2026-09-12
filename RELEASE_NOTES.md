@@ -1,3 +1,64 @@
+## v1.1.0 — CLI writes answer to the same rules as the MCP tools
+
+A write refused by a policy rule ended in a traceback; it now prints which rule refused it and
+exits 1.
+
+**CLI writes are authorised and audited under their MCP tool names.** All eleven write commands were `@guarded` under their Python function names
+(`session_logoff_cmd`, `pool_push_image_cmd`, …), so a policy rule naming the
+MCP tool — `operations: ["session_logoff"]` — refused the agent and let the
+identical logoff through the CLI, and the shared audit database recorded the two
+surfaces under two names. Each command now passes its MCP tool's name to
+`@guarded`, at the same risk level, so one deny rule scopes both:
+
+| CLI command | policy operation / audit name (was `<function>_cmd`) | risk |
+|---|---|---|
+| `session logoff` | `session_logoff` | high |
+| `session disconnect` | `session_disconnect` | medium |
+| `session message` | `session_send_message` | low |
+| `machine reset` | `machine_reset` | high |
+| `machine maintenance` | `machine_maintenance` | medium |
+| `machine remove` | `machine_remove` | high |
+| `pool set-enabled` | `pool_set_enabled` | medium |
+| `pool push-image` | `pool_push_image` | high |
+| `entitlement add` | `entitlement_add` | medium |
+| `entitlement remove` | `entitlement_remove` | medium |
+| `task cancel` | `task_cancel` | medium |
+
+Audit rows for these commands carry the new names from this release on; rows
+written earlier carry the `_cmd` names. A rule written against an old CLI name
+should be changed to the MCP tool name. Note `session message` maps to
+`session_send_message`, not `session_message`.
+
+New regression test `tests/eval/regression/test_cli_writes_guarded.py`: every
+CLI command that calls a `[WRITE]` ops function must be `@guarded`, under the
+name and risk level of the MCP write tool that calls the same ops function
+(derived by AST — commands registered by decorator or by `app.command(...)(fn)`
+— with a floor so a scan that matches nothing fails), plus an end-to-end check
+that a deny rule naming `session_logoff` stops the CLI command before it
+connects.
+
+**Environment-scoped deny rules now apply to CLI writes.** The skill's environment resolver was
+registered only when the MCP server was imported, which the CLI never does — so a
+`freeze-production-writes` rule stopped the MCP tool and not the CLI command doing the same
+thing. It now lives in `policy_environment.py`, imported by both surfaces. (With vmware-policy
+1.13.1 the CLI's `--config` file is the one whose labels are judged.)
+
+**OpenClaw could not show this skill to the model.** `metadata.openclaw.requires` listed
+config *file paths* under `requires.config`, which OpenClaw reads as `openclaw.json` keys that
+must be truthy — so the skill was "needs setup / not visible to the model" whatever was on disk
+(verified on OpenClaw 2026.6.35). `requires.env` named an optional override and `requires.bins`
+demanded a CLI that a plugin install (uvx) never has. `requires` is now `anyBins: [<cli>, "uvx"]`;
+the variables are still declared, under `optional.env`.
+
+**Install commands in the skill pin this release.** ClawHub reviews SKILL.md and references/,
+not the package they install, so an unpinned `uv tool install` vouched for code nobody reviewed.
+Every install command for this package in the skill now names this version.
+
+**A config path written as `~/…` now resolves.** Every MCP example config and setup-guide snippet
+sets `VMWARE_VDI_CONFIG` to `~/.vmware-vdi/config.yaml`, but MCP clients pass env values verbatim and the
+path was used unexpanded, so copying the snippet gave "Config file not found" for a file that was
+there. `~` is now expanded in the variable and in `--config`.
+
 ## v1.0.7 — one answer per .env, on every platform
 
 `.env` permissions are decided by `vmware_policy.fsperms` instead of POSIX mode

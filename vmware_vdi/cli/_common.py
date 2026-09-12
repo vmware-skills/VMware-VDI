@@ -8,6 +8,8 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
+from vmware_policy import PolicyDenied
 
 from vmware_vdi.config import ConfigError, load_config
 from vmware_vdi.connection import ConnectionManager, VdiApiError
@@ -45,6 +47,13 @@ def cli_errors(fn):
     def wrapper(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
+        except PolicyDenied as exc:
+            # A deny rule or maintenance window refused this write. @guarded already
+            # wrote the status="denied" audit row; say which rule fired instead of
+            # letting a traceback out (PolicyDenied is not a teaching error type).
+            rule = f" [dim](rule: {escape(exc.result.rule)})[/]" if exc.result.rule else ""
+            console.print(f"[red]Denied by policy: {escape(exc.result.reason)}[/]{rule}")
+            raise typer.Exit(1) from exc
         except (VdiApiError, VdiOpsError, ConfigError, ValueError, FileNotFoundError) as exc:
             console.print(f"[red]{exc}[/]")
             raise typer.Exit(1) from exc

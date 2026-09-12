@@ -67,7 +67,7 @@ def ad_search_cmd(
 
 @entitlement_app.command("add")
 @cli_errors
-@guarded(risk_level="medium")
+@guarded("entitlement_add", risk_level="medium")
 def entitlement_add_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     sid: Annotated[list[str], typer.Option("--sid", help="AD SID (repeat; from ad-search)")],
@@ -89,7 +89,7 @@ def entitlement_add_cmd(
 
 @entitlement_app.command("remove")
 @cli_errors
-@guarded(risk_level="medium")
+@guarded("entitlement_remove", risk_level="medium")
 def entitlement_remove_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     sid: Annotated[list[str], typer.Option("--sid", help="AD SID (repeat; from entitlement list)")],
@@ -132,7 +132,7 @@ def task_status_cmd(
 
 @task_app.command("cancel")
 @cli_errors
-@guarded(risk_level="medium")
+@guarded("task_cancel", risk_level="medium")
 def task_cancel_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     task_id: Annotated[str, typer.Option("--task", help="Task id")],
