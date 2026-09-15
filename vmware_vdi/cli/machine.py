@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
-from vmware_policy import guarded
+from vmware_policy import audited, guarded
 
 from vmware_vdi.cli._common import (
     ConfigOption,
@@ -30,6 +30,7 @@ def _print_blast(blast: dict) -> None:
 
 @machine_app.command("list")
 @cli_errors
+@audited("machine_list")
 def machine_list_cmd(
     pool: Annotated[str, typer.Option("--pool", help="Filter by pool id")] = "",
     state: Annotated[str, typer.Option("--state", help="Machine state, e.g. AGENT_UNREACHABLE")] = "",

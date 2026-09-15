@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
-from vmware_policy import guarded
+from vmware_policy import audited, guarded
 
 from vmware_vdi.cli._common import (
     ConfigOption,
@@ -24,6 +24,7 @@ pool_app = typer.Typer(help="Horizon desktop pools: list, enable/disable, push i
 
 @pool_app.command("list")
 @cli_errors
+@audited("pool_list")
 def pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List desktop pools."""
     from vmware_vdi.ops.pools import list_pools

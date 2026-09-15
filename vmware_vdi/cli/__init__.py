@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
+from vmware_policy import audited, cli_local
 
 app = typer.Typer(
     name="vmware-vdi",
@@ -19,6 +20,7 @@ app = typer.Typer(
 
 
 @app.command("init")
+@audited("init")
 def init_cmd(
     force: Annotated[bool, typer.Option("--force", help="Overwrite an existing config without asking")] = False,
     skip_test: Annotated[bool, typer.Option("--skip-test", help="Don't test the connection after writing config")] = False,
@@ -30,6 +32,7 @@ def init_cmd(
 
 
 @app.command("doctor")
+@audited("doctor")
 def doctor_cmd() -> None:
     """Diagnose config, credentials, and Connection Server connectivity."""
     from vmware_vdi.doctor import run_doctor
@@ -38,6 +41,7 @@ def doctor_cmd() -> None:
 
 
 @app.command("mcp")
+@cli_local("starts the MCP server; its tools audit themselves")
 def mcp_cmd() -> None:
     """Run the MCP server (stdio). Point your MCP client here via the installed console script."""
     from vmware_vdi.mcp_server.server import main

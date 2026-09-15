@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
-from vmware_policy import guarded
+from vmware_policy import audited, guarded
 
 from vmware_vdi.cli._common import (
     ConfigOption,
@@ -34,6 +34,7 @@ def _print_blast(blast: dict) -> None:
 
 @session_app.command("list")
 @cli_errors
+@audited("session_list")
 def session_list_cmd(
     user: Annotated[str, typer.Option("--user", help="Filter by AD user (substring)")] = "",
     pool: Annotated[str, typer.Option("--pool", help="Filter by pool/farm id")] = "",

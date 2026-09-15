@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
-from vmware_policy import guarded
+from vmware_policy import audited, guarded
 
 from vmware_vdi.cli._common import (
     ConfigOption,
@@ -26,6 +26,7 @@ task_app = typer.Typer(help="Horizon pool tasks (image push / provisioning).")
 
 @app_pool_app.command("list")
 @cli_errors
+@audited("app_pool_list")
 def app_pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List published application pools."""
     from vmware_vdi.ops.apps import list_application_pools
@@ -37,6 +38,7 @@ def app_pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) 
 
 
 @cli_errors
+@audited("image_list")
 def images_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List instant-clone base VMs and snapshots (the image catalog)."""
     from vmware_vdi.ops.images import list_images
@@ -52,6 +54,7 @@ def images_cmd(target: TargetOption = None, config: ConfigOption = None) -> None
 
 
 @cli_errors
+@audited("ad_user_search")
 def ad_search_cmd(
     name: Annotated[str, typer.Argument(help="AD user/group name substring")],
     target: TargetOption = None,
@@ -112,6 +115,7 @@ def entitlement_remove_cmd(
 
 @task_app.command("status")
 @cli_errors
+@audited("task_status")
 def task_status_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     task_id: Annotated[str, typer.Option("--task", help="Task id (omit to list all)")] = "",

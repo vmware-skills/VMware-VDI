@@ -1,6 +1,6 @@
 {
   "name": "@zw008/vmware-vdi",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "VMware/Omnissa Horizon VDI ops: pools, sessions, machines, images — 27 MCP tools.",
   "private": true,
   "license": "MIT",
