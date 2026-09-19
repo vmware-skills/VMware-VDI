@@ -40,12 +40,18 @@ def entitlement_add(
 ) -> dict:
     """[WRITE] Grant desktop-pool access to AD user/group SID(s).
 
-    Get SIDs from ad_user_search. confirm=False previews; confirm=True grants. Audited.
+    Get SIDs from ad_user_search. A bare call returns blast_radius (pool identity, which
+    principals are already entitled and which are new) and grants nothing; confirm=True
+    grants. Refused when the pool's current entitlements cannot be read.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         pool_id: The desktop-pool id (from pool_list).
         ad_user_or_group_ids: AD SIDs to entitle (from ad_user_search).
-        confirm: False previews; True grants.
+        confirm: False (default) returns the blast radius and changes nothing. True grants.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -67,12 +73,18 @@ def entitlement_remove(
 ) -> dict:
     """[WRITE] Revoke desktop-pool access from AD user/group SID(s).
 
-    Get SIDs from entitlement_list. confirm=False previews; confirm=True revokes. Audited.
+    Get SIDs from entitlement_list. A bare call returns blast_radius (pool identity, which
+    principals lose access and which were not entitled) and revokes nothing; confirm=True
+    revokes. Refused when the pool's current entitlements cannot be read.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         pool_id: The desktop-pool id (from pool_list).
         ad_user_or_group_ids: AD SIDs to remove (from entitlement_list).
-        confirm: False previews; True revokes.
+        confirm: False (default) returns the blast radius and changes nothing. True revokes.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:

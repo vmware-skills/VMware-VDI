@@ -25,9 +25,14 @@ from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
 from vmware_vdi.ops._fields import pool_id_of
+from vmware_vdi.ops._gate import PREVIEW_HINT, capped, refuse_unless_measured
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _BASE = "/inventory/v1/machines"
+
+#: Machine-row keys that can name the assigned user. A row with none of them says
+#: nothing about assignment — that is "not read", not "nobody assigned".
+_USER_FIELDS = ("user", "assigned_user")
 
 
 class MachineError(VdiOpsError):
@@ -83,7 +88,9 @@ def _resolve(client: HorizonClient, machine_ids: list[str]) -> list[dict]:
     for mid in machine_ids:
         path = f"{_BASE}/{mid}"
         try:
-            found.append(_summary(client.get(path)))
+            raw = client.get(path)
+            found.append({**_summary(raw),
+                          "_assignment_read": any(k in raw for k in _USER_FIELDS)})
         except VdiApiError as exc:
             if exc.status_code != 404 or exc.path != path:
                 raise
@@ -113,6 +120,50 @@ def _blast(targets: list[dict]) -> dict:
     return out
 
 
+def blast_radius(targets: list[dict], operation: str) -> dict:
+    """L1 for the machine writes: which machines, who is assigned, and what could not be read.
+
+    ``state`` is the one field the blast radius depends on: it is how the preview
+    says whether someone is on the desktop that is about to be reset, removed or
+    drained. A machine whose state did not read is unmeasured, not idle.
+
+    Assignment is reported, not gated on: ``assigned_users`` lists only users read
+    from ``user``/``assigned_user``, and a machine whose row carries neither field
+    is listed in ``assignment_unread`` — its assignment was not read, which is not
+    "nobody assigned".
+    """
+    unread = [t["id"] for t in targets if not t.get("_assignment_read", True)]
+    notes = {}
+    if unread:
+        notes["assignment_note"] = (
+            f"{len(unread)} machine(s) carry no user/assigned_user field: who is assigned to "
+            f"them was not read (that is not 'nobody assigned'). Check with machine_get."
+        )
+    return {
+        "operation": operation,
+        **_blast(targets),
+        "machine_ids": capped([t["id"] for t in targets]),
+        "pool_ids": sorted({t["pool_id"] for t in targets if t["pool_id"]}),
+        "assignment_unread_count": len(unread),
+        "assignment_unread": capped(unread),
+        **notes,
+        "blockers": [],
+        "unmeasured": [f"state of machine {t['id']}" for t in targets if not t["state"]],
+    }
+
+
+def _gate(verb: str, targets: list[dict], confirm: bool) -> tuple[dict, dict]:
+    """Measure; on confirm, refuse an unmeasured blast radius before anything is sent."""
+    blast = _blast(targets)
+    radius = blast_radius(targets, verb)
+    if confirm:
+        refuse_unless_measured(
+            f"machine {verb}", f"{radius['machine_count']} machine(s)", radius,
+            "Check each machine with machine_get; retry once its state reads.",
+        )
+    return blast, radius
+
+
 def _bulk_action(
     client: HorizonClient,
     verb: str,
@@ -127,16 +178,16 @@ def _bulk_action(
     ``verb`` doubles as the POST path segment (…/action/{verb}); all POST a bare id array.
     """
     targets = _resolve(client, machine_ids)
-    blast = _blast(targets)
+    blast, radius = _gate(verb, targets, confirm)
     if not confirm:
         return {"action": "preview", "operation": verb, "would_affect": blast,
-                "hint": f"Re-run with confirm=True to {verb} {blast['machine_count']} machine(s)."}
+                "blast_radius": radius, "hint": PREVIEW_HINT}
     client.post(f"{_BASE}/action/{verb}", json_data=[t["id"] for t in targets])
     if audit_logger is not None:
         audit_logger.log(target=target_name, operation=f"machine_{verb.replace('-', '_')}",
                          resource=",".join(machine_ids), parameters={"machine_count": blast["machine_count"]},
                          result="ok")
-    return {"action": verb, "affected": blast}
+    return {"action": verb, "affected": blast, "blast_radius": radius}
 
 
 def reset_machines(
@@ -177,11 +228,11 @@ def remove_machines(
 ) -> dict:
     """Remove machine(s) from their pool — for instant clones this deletes the VM. Preview unless confirm=True."""
     targets = _resolve(client, machine_ids)
-    blast = _blast(targets)
+    blast, radius = _gate("remove", targets, confirm)
     if not confirm:
         return {"action": "preview", "operation": "remove", "would_affect": blast,
-                "hint": f"Re-run with confirm=True to remove {blast['machine_count']} machine(s). "
-                        "For instant clones this deletes the backing VM."}
+                "blast_radius": radius,
+                "hint": f"{PREVIEW_HINT} For instant clones removing a machine deletes its backing VM."}
     # Delete one at a time; audit each success individually so a mid-loop failure still
     # records exactly what was removed (never leave already-deleted VMs unaudited).
     removed, failed = [], None
@@ -199,4 +250,4 @@ def remove_machines(
             f"Removed {removed} then failed before the rest ({failed}). "
             f"Re-run machine_remove for the remaining ids after checking machine_list."
         )
-    return {"action": "remove", "removed": removed, "affected": blast}
+    return {"action": "remove", "removed": removed, "affected": blast, "blast_radius": radius}

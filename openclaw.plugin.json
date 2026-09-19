@@ -11,7 +11,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "vmware-vdi==1.1.1",
+        "vmware-vdi==1.2.0",
         "vmware-vdi-mcp"
       ]
     }

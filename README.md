@@ -41,7 +41,16 @@ highest single-call blast radius in the family — and its preview states affect
 in-session counts before any confirm, together with `occupancy`: `determined` when those counts
 can be believed, `unknown` when sessions exist that cannot be attributed to any pool or farm. An
 `unknown` occupancy refuses the confirm rather than reporting an unverified zero; overriding it
-needs `--acknowledge-unknown-occupancy` and is recorded in the audit row.
+needs `--acknowledge-unknown-occupancy` and is recorded in the audit row. A machine that names no
+desktop pool also makes the desktop count a lower bound ("at least N"); that refuses the confirm
+with no override.
+
+On MCP, every gated write takes `confirm` (default `false`). A call without it returns `blast_radius` —
+the object's identity, counts, identifiers up to 20, `blockers` and `unmeasured` — and changes nothing;
+the acting response carries the same dict. An agent should show it to the user and pass `confirm=true`
+only after they agree. When something the blast radius depends on could not be read — a machine's
+state, a session's user, a task's type or state, a pool's enabled flag, a pool's current entitlements —
+`confirm=true` is refused with a message naming what to check.
 
 ## Quick start
 

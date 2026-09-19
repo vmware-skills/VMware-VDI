@@ -1,3 +1,48 @@
+## v1.2.0 — every gated write states its blast radius and refuses to act blind
+
+**Behaviour changes for callers (breaking first):**
+
+* `confirm=True` is now **refused** when something the blast radius depends on could not be read:
+  a machine's `state` (`machine_reset`, `machine_maintenance`, `machine_remove`), a session's user
+  (`session_logoff`, `session_disconnect`), a task's type or state (`task_cancel`), a pool's current
+  `enabled` flag (`pool_set_enabled`), or the pool's current entitlements (`entitlement_add`,
+  `entitlement_remove`). Before, the unread value dropped out of the preview and the call went ahead.
+  The refusal is a teaching error (`{"error": ...}` on MCP, audited as a failure) naming what to check.
+  The CLI calls the same ops functions, so its confirmed call refuses in the same cases.
+* `pool_push_image` also refuses `confirm=True` when a machine row names no desktop pool: it could be
+  in this pool, so `affected_desktops` is a lower bound. `blast_radius` gains `unattributed_desktops`,
+  `unattributed_desktop_ids` and `desktops_note`, the preview says "at least N desktop(s)", and
+  `acknowledge_unknown_occupancy` does **not** override this (it covers occupancy only). Before, those
+  rows were dropped and the preview could say it recreates 0 desktops.
+* `task_cancel` now reads the task before cancelling, so a wrong task id is a teaching 404 on the
+  preview instead of on the cancel POST.
+* `entitlement_add` / `entitlement_remove` now read the pool (`GET desktop-pools/{id}`) and its current
+  entitlements before acting, so a wrong pool id is refused before anything is sent.
+
+**Additive:**
+
+* Every preview **and** every acting response of the ten gated tools carries a top-level
+  `blast_radius` dict: identity, counts, identifiers up to 20, `blockers` and `unmeasured`.
+  `pool_push_image`'s dict keeps its shape and semantics (`affected_desktops`, `in_session_count`,
+  `in_session_users`, `occupancy`, `acknowledge_unknown_occupancy`) and gains `pool_id`, `pool_name`,
+  `desktop_ids`, `blockers` and `unmeasured` (`["occupancy"]` when occupancy is unknown).
+  `entitlement_add` reports `already_entitled` / `newly_entitled`; `entitlement_remove` reports
+  `losing_access` / `not_entitled`. When the entitlement read answers with a list rather than an
+  `EntitlementInfo` object, every page is read (`page`/`size`), so a principal on page 2 is not reported
+  as "not entitled".
+* The machine tools' `blast_radius` gains `assignment_unread` / `assignment_unread_count` (and an
+  `assignment_note`): machines whose row has neither `user` nor `assigned_user`. Their assignment was
+  not read — it is not "nobody assigned". Reported, not refused (`state` stays the gated field).
+* The old per-tool keys (`would_affect`, `would_set`, `would_cancel`, `would_entitle`,
+  `would_unentitle`, and `affected` on acting responses) are still returned. **Deprecated: removed in
+  the next minor release** — read `blast_radius`.
+* Wording (HLD §7): each `confirm` parameter now reads "False (default) returns the blast radius and
+  changes nothing. True <verb>." and each description tells the model not to set `confirm=True` on its
+  own because the user asked earlier. Preview hints no longer say "Re-run with confirm=True to …"; they
+  say to show `blast_radius` to the user and re-run with `confirm=True` only after they agree.
+* Requires `vmware-policy>=1.17.0`, which audits a `confirm=False` preview as `dry_run` and redacts long
+  audit text in linear time.
+
 ## v1.1.1 — CLI reads are audited
 
 No CLI read wrote `~/.vmware/audit.db` — only MCP calls and CLI writes (`@guarded`) did. A live

@@ -55,7 +55,7 @@ radius, are double-confirmed at the CLI, and are audit-logged.
 ## Quick Install
 
 ```bash
-uv tool install vmware-vdi==1.1.1
+uv tool install vmware-vdi==1.2.0
 vmware-vdi init      # friendly setup: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 ```
@@ -141,8 +141,16 @@ before any confirm, plus `blast_radius.occupancy`: `determined` when those count
 `unknown` when session rows exist that belong to neither a desktop pool nor a farm and so cannot be
 ruled out of this pool. An `unknown` occupancy makes `in_session_count` a lower bound and refuses
 `confirm=true` — check `session_list`, or pass `acknowledge_unknown_occupancy=true`, which is audited.
-`session_logoff` / `machine_reset` / `machine_remove` state their affected users/
-machines and require double confirmation at the CLI.
+Machines that name no desktop pool (`unattributed_desktops`) make the desktop count "at least N" and
+refuse `confirm=true` with no override.
+
+**Confirmation gate (MCP)**: the ten gated writes (`session_logoff`/`disconnect`, `machine_reset`/
+`maintenance`/`remove`, `pool_set_enabled`, `pool_push_image`, `task_cancel`, `entitlement_add`/`remove`)
+take `confirm` (default `false`). A call without it returns `blast_radius` — identity, counts, ids (up to
+20), `blockers`, `unmeasured` — and changes nothing; the acting response carries it too. Show it to the
+user and pass `confirm=true` only after they agree: the user asking earlier is not agreement, they have
+not seen it. If anything the blast radius depends on could not be read (a machine's state, a session's
+user, a task's state, a pool's enabled flag, the pool's entitlements), `confirm=true` is refused.
 
 **Read/write split**: 16 read-only tools (`[READ]` docstring marker), 11 modify state. All writes are
 audit-logged; destructive ones (`session_logoff`, `machine_reset`, `machine_remove`, `pool_set_enabled`

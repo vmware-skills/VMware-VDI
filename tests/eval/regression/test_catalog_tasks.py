@@ -33,6 +33,9 @@ class FakeClient:
             "/external/v1/ad-users-or-groups": [{"id": "S-1-5-21-x", "name": "Finance", "group": True, "domain": "ACME"}],
             "/inventory/v1/desktop-pools/pool-fin/tasks": [{"id": "t-1", "type": "PUSH_IMAGE", "state": "RUNNING", "percent_complete": 40}],
             "/inventory/v1/desktop-pools/pool-fin/tasks/t-1": {"id": "t-1", "type": "PUSH_IMAGE", "state": "RUNNING", "percent_complete": 40},
+            # Entitlement writes now measure their blast radius: the pool's identity
+            # and who is entitled before the change (HLD §7).
+            "/inventory/v1/desktop-pools/pool-fin": {"id": "pool-fin", "name": "Finance", "enabled": True},
         }.get(path, [])
 
     def post(self, path, json_data=None, *, retries=1):

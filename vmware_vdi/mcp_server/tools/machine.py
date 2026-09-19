@@ -71,12 +71,16 @@ def machine_reset(
 ) -> dict:
     """[WRITE] Hard-reset desktop machine(s) — the user loses unsaved state.
 
-    confirm=False previews the blast radius (machine count + assigned users) without acting;
-    confirm=True resets. For a graceful in-guest reboot use vmware-aiops (the vCenter VM). Audited.
+    A bare call returns blast_radius (machine ids, names, states, assigned users) and resets
+    nothing; confirm=True resets. A machine whose state cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    For a graceful in-guest reboot use vmware-aiops (the vCenter VM). Audited.
 
     Args:
         machine_ids: Machine ids to reset (from machine_list).
-        confirm: False previews; True resets.
+        confirm: False (default) returns the blast radius and changes nothing. True resets.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -98,12 +102,18 @@ def machine_maintenance(
 ) -> dict:
     """[WRITE] Enter (enabled=True) or exit (False) maintenance mode for machine(s).
 
-    Maintenance drains the machine (no new sessions). confirm=False previews; confirm=True applies. Audited.
+    Maintenance drains the machine (no new sessions). A bare call returns blast_radius
+    (machine ids, states, assigned users) and changes nothing; confirm=True applies. A machine
+    whose state cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         machine_ids: Machine ids (from machine_list).
         enabled: True enters maintenance; False exits.
-        confirm: False previews; True applies.
+        confirm: False (default) returns the blast radius and changes nothing. True applies it.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -124,11 +134,16 @@ def machine_remove(
 ) -> dict:
     """[WRITE] Remove machine(s) from their pool — for instant clones this DELETES the backing VM.
 
-    confirm=False previews the blast radius; confirm=True removes. Audited.
+    A bare call returns blast_radius (machine ids, names, states, assigned users) and removes
+    nothing; confirm=True removes. A machine whose state cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         machine_ids: Machine ids to remove (from machine_list).
-        confirm: False previews; True removes.
+        confirm: False (default) returns the blast radius and changes nothing. True removes.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:

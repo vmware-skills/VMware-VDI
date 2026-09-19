@@ -62,12 +62,18 @@ def pool_set_enabled(
 ) -> dict:
     """[WRITE] Enable or disable a desktop pool — disabling stops NEW sessions (existing keep running).
 
-    Idempotent (matching state returns a noop). confirm=False previews; confirm=True applies. Audited.
+    Idempotent (matching state returns a noop). A bare call returns blast_radius (pool
+    identity, current and new enabled state) and changes nothing; confirm=True applies. A
+    pool whose current enabled state cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         pool_id: The pool id (from pool_list).
         enabled: True enables; False disables.
-        confirm: False previews; True applies.
+        confirm: False (default) returns the blast radius and changes nothing. True applies it.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -94,13 +100,18 @@ def pool_push_image(
     Highest blast radius in the family: the preview states affected-desktop and in-session
     counts before you confirm, plus blast_radius.occupancy — "determined" when those counts
     can be believed, "unknown" when sessions exist that cannot be attributed to any pool or
-    farm. confirm=True schedules the apply. Audited.
+    farm. confirm=True schedules the apply.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         pool_id: The pool id (from pool_list).
         stop_on_error: Halt the rolling push on the first machine error (default True).
         logoff_policy: WAIT_FOR_LOGOFF (default) or FORCE_LOGOFF.
-        confirm: False previews the blast radius; True schedules the push.
+        confirm: False (default) returns the blast radius and changes nothing. True schedules
+            the push.
         acknowledge_unknown_occupancy: Only consulted when the preview reports
             blast_radius.occupancy == "unknown", where in_session_count is a lower bound
             rather than a count and confirm=True is refused. Setting it True pushes on an

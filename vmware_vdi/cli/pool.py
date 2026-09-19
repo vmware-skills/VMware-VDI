@@ -88,7 +88,13 @@ def pool_push_image_cmd(
     client, tname = _get_connection(target, config)
     preview = push_image(client, pool_id=pool_id, logoff_policy=policy, confirm=False)
     b = preview["blast_radius"]
-    if b["occupancy"] == "unknown":
+    if b["unattributed_desktops"]:
+        # A lower bound again: some desktops could not be placed in any pool.
+        console.print(
+            f"[bold red]BLAST RADIUS:[/] recreates [bold yellow]at least[/] "
+            f"[cyan]{b['affected_desktops']}[/] desktop(s) — {b['desktops_note']}"
+        )
+    elif b["occupancy"] == "unknown":
         # Never print a count here: the number is a lower bound, and printed next to
         # "BLAST RADIUS" a lower bound of 0 reads as an all-clear.
         console.print(

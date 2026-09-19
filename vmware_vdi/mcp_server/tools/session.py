@@ -81,13 +81,17 @@ def session_logoff(
     """[WRITE] Force-logoff Horizon session(s) — kicks the user, triggers profile write-back.
 
     Identify targets by explicit session_ids OR by user (all of that user's sessions).
-    confirm=False (default) returns a preview stating the blast radius — session count
-    and affected user names — without acting; re-run with confirm=True to apply. Audited.
+    A bare call returns blast_radius — session ids, count and affected users — and logs off
+    nothing; confirm=True logs off. A session whose user cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         session_ids: Session ids to log off (from session_list).
         user: Log off all sessions of this AD user (substring match); refuses if none match.
-        confirm: False previews; True logs off.
+        confirm: False (default) returns the blast radius and changes nothing. True logs off.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -111,13 +115,18 @@ def session_disconnect(
 ) -> dict:
     """[WRITE] Disconnect Horizon session(s) — state preserved, the user can reconnect.
 
-    Less disruptive than logoff. Identify by session_ids OR user. confirm=False previews
-    the blast radius; confirm=True applies. Audited.
+    Less disruptive than logoff. Identify by session_ids OR user. A bare call returns
+    blast_radius (session ids, count, affected users) and changes nothing; confirm=True
+    disconnects. A session whose user cannot be read is refused.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         session_ids: Session ids to disconnect.
         user: Disconnect all sessions of this AD user (substring match).
-        confirm: False previews; True disconnects.
+        confirm: False (default) returns the blast radius and changes nothing. True disconnects.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:

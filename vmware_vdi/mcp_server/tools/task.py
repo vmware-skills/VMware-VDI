@@ -40,12 +40,18 @@ def task_cancel(
 ) -> dict:
     """[WRITE] Cancel a running pool task (e.g. an in-progress image push).
 
-    confirm=False previews; confirm=True cancels. Work already applied is not rolled back. Audited.
+    A bare call reads the task and returns blast_radius (task type, state, progress) and
+    cancels nothing; confirm=True cancels. A task whose type or state cannot be read is
+    refused. Work already applied is not rolled back.
+    Show blast_radius to the user and wait for their decision. Do not set confirm=True
+    on your own because the user asked for this earlier: they have not seen the blast
+    radius yet.
+    Audited.
 
     Args:
         pool_id: The desktop-pool id.
         task_id: The task id (from task_status).
-        confirm: False previews; True cancels.
+        confirm: False (default) returns the blast radius and changes nothing. True cancels.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:

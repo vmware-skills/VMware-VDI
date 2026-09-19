@@ -27,7 +27,14 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 `pool_push_image` 重建整池桌面,爆炸半径最高,预览报受影响桌面数 + 在线会话数,并给出 `occupancy`:
 `determined` 表示这两个数可信,`unknown` 表示存在既不属于任何桌面池、也不属于任何农场的会话行。
 `unknown` 时在线会话数只是下限,confirm 会被拒绝而不是按"未经核实的 0"放行;要强推须显式
-`--acknowledge-unknown-occupancy`,该确认会写进审计记录。
+`--acknowledge-unknown-occupancy`,该确认会写进审计记录。存在不带桌面池 id 的机器行时,
+受影响桌面数同样只是下限("至少 N 台"),confirm 会被拒绝,且没有覆盖开关。
+
+MCP 侧每个受控写工具都有 `confirm` 参数(默认 `false`)。不带它调用时返回 `blast_radius` ——
+对象身份、数量、最多 20 个标识符、`blockers` 与 `unmeasured` —— 不做任何改动;真正执行时的返回也带
+同一个字典。agent 应先把它给用户看,用户同意后才传 `confirm=true`。只要爆炸半径依赖的某项读不到 ——
+机器状态、会话用户、任务类型或状态、池的启用标志、池当前的授权名单 —— `confirm=true` 就会被拒绝,
+错误信息会说明该去查什么。
 
 ## 快速开始
 ```bash

@@ -48,6 +48,22 @@ optional `target`. Typical response tokens are estimates for a small estate; lis
 | `pool_push_image` | W | **critical** — apply pending image; recreates EVERY desktop; preview states affected desktops + in-session users |
 | `task_cancel` | W | cancel a running pool task (applied work is not rolled back) |
 
+**Confirmation gate (MCP)**: every write above except `session_send_message` takes `confirm`
+(default `false`). Without it the tool returns `{"action": "preview", "blast_radius": {...}, "hint": ...}`
+and changes nothing; with it the response carries the same `blast_radius`. The older per-tool keys
+(`would_affect`, `would_set`, `would_cancel`, `would_entitle`, `would_unentitle`) are still returned and
+are removed in the next minor release. What each blast radius measures, and what refuses `confirm=true`
+when it cannot be read:
+
+| Tool | `blast_radius` | Refused when unreadable |
+|------|----------------|-------------------------|
+| `machine_reset` / `machine_maintenance` / `machine_remove` | machine count, ids, names, states, assigned users, pool ids; `assignment_unread` lists machines whose row has no `user`/`assigned_user` field (not read ≠ nobody assigned; reported, not refused) | a machine's `state` |
+| `session_logoff` / `session_disconnect` | session count, ids, affected users | a session's user |
+| `task_cancel` | task type, state, progress (read via the task GET) | task type or state |
+| `pool_set_enabled` | pool id/name/type, current and new enabled state | the current enabled flag |
+| `pool_push_image` | pool id/name, affected desktops + ids, `unattributed_desktops` (+ ids: machines that name no pool, so the desktop count is a lower bound), in-session count/users, occupancy | occupancy (override: `acknowledge_unknown_occupancy`); machines with no pool id (no override) |
+| `entitlement_add` / `entitlement_remove` | pool id/name, principal ids, already entitled / newly entitled, or losing access / not entitled (a list-shaped entitlement answer is read across every page) | the pool's current entitlements |
+
 **Beta note (踩坑 #36)**: REST endpoints are verified against the official Horizon Server API operation
 index. GET-response *field names* are defensive (`.get()` with fallbacks) and pending validation against a
 live Connection Server — a mismatch yields empty results, not a crash. First real-Horizon use should

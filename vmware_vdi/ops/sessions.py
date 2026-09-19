@@ -25,6 +25,7 @@ from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
 from vmware_vdi.ops._fields import user_of
+from vmware_vdi.ops._gate import PREVIEW_HINT, capped, refuse_unless_measured
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _BASE = "/inventory/v1/sessions"
@@ -138,6 +139,21 @@ def _blast(targets: list[dict]) -> dict:
     return out
 
 
+def blast_radius(targets: list[dict], operation: str) -> dict:
+    """L1 for logoff/disconnect: which sessions, whose, and what could not be read.
+
+    Who is kicked is the blast radius of ending a session, so a session row that
+    names nobody is unmeasured rather than harmless.
+    """
+    return {
+        "operation": operation,
+        **_blast(targets),
+        "session_ids": capped([t["id"] for t in targets]),
+        "blockers": [],
+        "unmeasured": [f"user of session {t['id']}" for t in targets if not t["user"]],
+    }
+
+
 def _act(
     client: HorizonClient,
     action: str,
@@ -154,13 +170,20 @@ def _act(
     """
     targets = _resolve_ids(client, session_ids, user)
     blast = _blast(targets)
+    radius = blast_radius(targets, action)
     if not confirm:
         return {
             "action": "preview",
             "operation": action,
             "would_affect": blast,
-            "hint": f"Re-run with confirm=True to {action} {blast['session_count']} session(s).",
+            "blast_radius": radius,
+            "hint": PREVIEW_HINT,
         }
+    refuse_unless_measured(
+        f"session {action}", f"{radius['session_count']} session(s)", radius,
+        "Check the session with session_get; a session whose user cannot be read "
+        "cannot be shown to the operator before it is ended.",
+    )
     ids = [t["id"] for t in targets]
     client.post(f"{_BASE}/action/{action}", json_data=ids)  # body is a bare id array
     if audit_logger is not None:
@@ -169,7 +192,7 @@ def _act(
             parameters={"session_count": blast["session_count"], "users": blast["affected_users"]},
             result="ok",
         )
-    return {"action": action, "affected": blast}
+    return {"action": action, "affected": blast, "blast_radius": radius}
 
 
 def logoff_sessions(

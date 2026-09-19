@@ -24,6 +24,7 @@ from vmware_vdi.connection import HorizonClient, VdiApiError
 from vmware_vdi.ops._errors import VdiOpsError
 from vmware_vdi.ops._fetch import fetch_all
 from vmware_vdi.ops._fields import pool_id_of, user_of
+from vmware_vdi.ops._gate import PREVIEW_HINT, capped, refuse_unless_measured
 from vmware_vdi.ops._paging import envelope as _envelope
 
 _BASE = "/inventory/v1/desktop-pools"
@@ -92,17 +93,33 @@ def set_pool_enabled(
 ) -> dict:
     """Enable or disable a pool (disable stops NEW sessions; existing keep running). Idempotent."""
     pool = _require_pool(client, pool_id)
+    radius = {
+        "pool_id": pool_id,
+        "pool_name": pool["name"],
+        "pool_type": pool["type"],
+        "current_enabled": pool["enabled"],
+        "new_enabled": enabled,
+        "effect": ("new sessions are allowed" if enabled
+                   else "new sessions are refused; existing sessions keep running"),
+        "blockers": [],
+        # Without the current flag the preview cannot say whether this changes anything.
+        "unmeasured": [] if pool["enabled"] is not None else ["current enabled state"],
+    }
     if pool["enabled"] is not None and bool(pool["enabled"]) == enabled:
-        return {"action": "noop", "pool": pool,
+        return {"action": "noop", "pool": pool, "blast_radius": radius,
                 "hint": f"Pool '{pool['name']}' is already {'enabled' if enabled else 'disabled'}."}
     if not confirm:
         return {"action": "preview", "would_set": {"pool": pool, "enabled": enabled},
-                "hint": "Re-run with confirm=True to apply."}
+                "blast_radius": radius, "hint": PREVIEW_HINT}
+    refuse_unless_measured(
+        "pool_set_enabled", f"pool '{pool['name'] or sanitize(pool_id, 100)}'", radius,
+        "Check the pool with pool_get; retry once its enabled flag reads.",
+    )
     client.post(f"{_BASE}/action/{'enable' if enabled else 'disable'}", json_data=[pool_id])
     if audit_logger is not None:
         audit_logger.log(target=target_name, operation="pool_set_enabled", resource=pool_id,
                          parameters={"enabled": enabled}, result="ok")
-    return {"action": "set", "pool": pool, "enabled": enabled}
+    return {"action": "set", "pool": pool, "enabled": enabled, "blast_radius": radius}
 
 
 _DETAIL_CAP = 20
@@ -121,8 +138,20 @@ def _pool_blast(client: HorizonClient, pool_id: str) -> dict:
     out of it, so ``in_session_count`` becomes a lower bound — and a lower bound of
     zero is not a finding of zero. Reporting that as "0 logged-in users" is how the
     guard on the family's most destructive call came to pass silently (形态 #1).
+
+    Desktops get the same treatment. A machine row with no desktop-pool id cannot be
+    placed in this pool or ruled out of it, so ``affected_desktops`` becomes a lower
+    bound and those rows go into ``unmeasured``. Unlike occupancy there is no
+    override for this: ``acknowledge_unknown_occupancy`` does not cover it.
     """
-    machines = [m for m in fetch_all(client, _MACHINES) if pool_id_of(m) == pool_id]
+    machines: list[dict] = []
+    unplaced: list[dict] = []
+    for m in fetch_all(client, _MACHINES):
+        mid = pool_id_of(m)
+        if mid == pool_id:
+            machines.append(m)
+        elif mid is None:
+            unplaced.append(m)
 
     mine: list[dict] = []
     unattributed = 0
@@ -142,16 +171,35 @@ def _pool_blast(client: HorizonClient, pool_id: str) -> dict:
 
     # Counts are complete; the name list is capped so a large pool's preview stays compact.
     blast = {
+        "pool_id": pool_id,
         "affected_desktops": len(machines),
+        "desktop_ids": capped([m.get("id") for m in machines], _DETAIL_CAP),
         "in_session_count": len(mine),
         "in_session_users": len(users),
         "users": users[:_DETAIL_CAP],
         "occupancy": "unknown" if unattributed else "determined",
+        "unattributed_desktops": len(unplaced),
+        "unattributed_desktop_ids": capped([m.get("id") for m in unplaced], _DETAIL_CAP),
     }
     if len(users) > _DETAIL_CAP:
         blast["users_note"] = f"showing {_DETAIL_CAP} of {len(users)}"
     if unidentified:
         blast["unidentified_sessions"] = unidentified
+    blast["blockers"] = []
+    unmeasured = []
+    if unplaced:
+        ids = ", ".join(sanitize(str(i), 100) for i in blast["unattributed_desktop_ids"])
+        unmeasured.append(
+            f"desktop pool of {len(unplaced)} machine(s) with no desktop-pool id ({ids})"
+        )
+        blast["desktops_note"] = (
+            f"{len(unplaced)} machine(s) carry no desktop-pool id, so they could belong to this "
+            f"pool: affected_desktops is a lower bound, not a count."
+        )
+    # The one unknown the push has an audited override for (acknowledge_unknown_occupancy).
+    if unattributed:
+        unmeasured.append("occupancy")
+    blast["unmeasured"] = unmeasured
     if unattributed:
         blast["occupancy_note"] = (
             f"{unattributed} session(s) carry neither a desktop-pool id nor a farm id, so they "
@@ -186,26 +234,41 @@ def push_image(
     if logoff_policy.upper() not in {"WAIT_FOR_LOGOFF", "FORCE_LOGOFF"}:
         raise PoolError("logoff_policy must be WAIT_FOR_LOGOFF or FORCE_LOGOFF.")
     pool = _require_pool(client, pool_id)
-    blast = _pool_blast(client, pool_id)
+    blast = {**_pool_blast(client, pool_id), "pool_name": pool["name"]}
     unknown = blast["occupancy"] == "unknown"
+    # Everything unmeasured except occupancy: no acknowledgement covers these.
+    unread = [u for u in blast["unmeasured"] if u != "occupancy"]
+    desktops = (f"at least {blast['affected_desktops']}" if blast["unattributed_desktops"]
+                else str(blast["affected_desktops"]))
     if not confirm:
-        if unknown:
+        if unread:
             hint = (
-                f"This recreates {blast['affected_desktops']} desktop(s). Who is logged in "
-                f"could not be determined: {blast['occupancy_note']} Check session_list before "
-                f"pushing; to proceed anyway re-run with confirm=True and "
-                f"acknowledge_unknown_occupancy=True."
+                f"This recreates {desktops} desktop(s): {blast['desktops_note']} Nothing was "
+                f"changed. Check those machines with machine_get; confirm=True is refused until "
+                f"every desktop can be placed in a pool."
+            )
+        elif unknown:
+            hint = (
+                f"This recreates {desktops} desktop(s). Who is logged in "
+                f"could not be determined: {blast['occupancy_note']} Nothing was changed. Check "
+                f"session_list and show blast_radius to the user; only if they decide to push "
+                f"anyway, re-run with confirm=True and acknowledge_unknown_occupancy=True."
             )
         else:
             hint = (
-                f"This recreates {blast['affected_desktops']} desktop(s), affecting "
-                f"{blast['in_session_count']} logged-in session(s). "
-                f"Re-run with confirm=True to schedule."
+                f"This recreates {desktops} desktop(s), affecting "
+                f"{blast['in_session_count']} logged-in session(s). {PREVIEW_HINT}"
             )
         return {
             "action": "preview", "operation": "apply-image", "pool": pool,
             "blast_radius": blast, "hint": hint,
         }
+    refuse_unless_measured(
+        "pool_push_image", f"pool '{pool['name'] or sanitize(pool_id, 100)}'",
+        {**blast, "unmeasured": unread},
+        "Check those machines with machine_get (or machine_list); retry once each one names "
+        "its desktop pool. acknowledge_unknown_occupancy does not cover this.",
+    )
     if unknown and not acknowledge_unknown_occupancy:
         raise PoolError(
             f"Refusing to recreate every desktop in pool '{pool['name'] or sanitize(pool_id, 100)}' "

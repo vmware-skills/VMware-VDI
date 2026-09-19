@@ -29,7 +29,15 @@ support `--dry-run`. `pool_push_image` (recreates every desktop in a pool) repor
 in-session counts before any confirm, and reports whether occupancy could be established at all: when
 session rows cannot be attributed to a pool or farm the count is a lower bound, so the confirm is
 refused rather than passed on an unverified zero. The override
-(`--acknowledge-unknown-occupancy` / `acknowledge_unknown_occupancy=true`) is audited.
+(`--acknowledge-unknown-occupancy` / `acknowledge_unknown_occupancy=true`) is audited. Machine rows
+that name no desktop pool make the desktop count a lower bound too; that refuses the confirm and no
+override covers it.
+
+On MCP the ten gated tools (the ones above plus `session_disconnect`, `machine_maintenance` and
+`entitlement_add`) take `confirm: bool = False`: a call without it returns `blast_radius` (identity,
+counts, identifiers up to 20, `blockers`, `unmeasured`) and changes nothing. `confirm=true` is refused
+when a field the blast radius depends on could not be read, so an unread value is never acted on as if it
+were an empty one. Refusals return the error envelope and are audited as failures.
 
 ### SSL/TLS Verification
 On by default. `verify_ssl: false` is per-target and intended only for self-signed lab certificates.
