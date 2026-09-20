@@ -55,7 +55,7 @@ radius, are double-confirmed at the CLI, and are audit-logged.
 ## Quick Install
 
 ```bash
-uv tool install vmware-vdi==1.2.0
+uv tool install vmware-vdi==1.3.0
 vmware-vdi init      # friendly setup: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 ```
