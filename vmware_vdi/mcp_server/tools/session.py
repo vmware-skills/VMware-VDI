@@ -1,7 +1,7 @@
 """Session MCP tools (2 read / 3 write) — the help-desk surface.
 
-session_list, session_get [READ]; session_logoff, session_disconnect,
-session_send_message [WRITE]. Signatures use ``Optional[X]`` (not PEP 604) because
+list_vdi_sessions, get_vdi_session [READ]; logoff_vdi_session, disconnect_vdi_session,
+send_vdi_session_message [WRITE]. Signatures use ``Optional[X]`` (not PEP 604) because
 FastMCP/Pydantic reflect them under interpreters where the union form can raise
 (踩坑 #33).
 """
@@ -17,7 +17,7 @@ from vmware_vdi.mcp_server._shared import _audit, _get_connection, _safe_error, 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def session_list(
+def list_vdi_sessions(
     user: Optional[str] = None,
     pool: Optional[str] = None,
     state: Optional[str] = None,
@@ -47,19 +47,19 @@ def session_list(
             _get_connection(target), user=user, pool=pool, state=state, limit=limit, offset=offset
         )
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_list")}
+        return {"error": _safe_error(exc, "list_vdi_sessions")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def session_get(session_id: str, target: Optional[str] = None) -> dict:
+def get_vdi_session(session_id: str, target: Optional[str] = None) -> dict:
     """[READ] Full detail for one Horizon session by id.
 
-    A wrong id returns a teaching error ("run session_list for current ids"), not a
-    traceback. Use session_list to discover ids.
+    A wrong id returns a teaching error ("run list_vdi_sessions for current ids"), not a
+    traceback. Use list_vdi_sessions to discover ids.
 
     Args:
-        session_id: The session id (from session_list).
+        session_id: The session id (from list_vdi_sessions).
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -67,12 +67,12 @@ def session_get(session_id: str, target: Optional[str] = None) -> dict:
 
         return get_session(_get_connection(target), session_id)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_get")}
+        return {"error": _safe_error(exc, "get_vdi_session")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="high")
-def session_logoff(
+def logoff_vdi_session(
     session_ids: Optional[list[str]] = None,
     user: Optional[str] = None,
     confirm: bool = False,
@@ -89,7 +89,7 @@ def session_logoff(
     Audited.
 
     Args:
-        session_ids: Session ids to log off (from session_list).
+        session_ids: Session ids to log off (from list_vdi_sessions).
         user: Log off all sessions of this AD user (substring match); refuses if none match.
         confirm: False (default) returns the blast radius and changes nothing. True logs off.
         target: Horizon target from config.yaml; omit to use the default.
@@ -102,12 +102,12 @@ def session_logoff(
             confirm=confirm, audit_logger=_audit, target_name=_target_name(target),
         )
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_logoff")}
+        return {"error": _safe_error(exc, "logoff_vdi_session")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="medium")
-def session_disconnect(
+def disconnect_vdi_session(
     session_ids: Optional[list[str]] = None,
     user: Optional[str] = None,
     confirm: bool = False,
@@ -137,12 +137,12 @@ def session_disconnect(
             confirm=confirm, audit_logger=_audit, target_name=_target_name(target),
         )
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_disconnect")}
+        return {"error": _safe_error(exc, "disconnect_vdi_session")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def session_send_message(
+def send_vdi_session_message(
     message: str,
     session_ids: Optional[list[str]] = None,
     user: Optional[str] = None,
@@ -169,4 +169,4 @@ def session_send_message(
             message_type=message_type, audit_logger=_audit, target_name=_target_name(target),
         )
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_send_message")}
+        return {"error": _safe_error(exc, "send_vdi_session_message")}

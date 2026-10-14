@@ -44,7 +44,7 @@ def health_summary(client: HorizonClient) -> dict:
         "sessions": {"total": len(sessions), "by_state": dict(sess_by_state)},
         "machines": {"total": len(machines), "problem": len(problem), "problem_by_state": dict(problem_by_state)},
         "pools": {"total": len(pools), "enabled": pools_enabled, "disabled": len(pools) - pools_enabled},
-        "hint": "healthy" if not problem else f"{len(problem)} machine(s) need attention — see machine_list --state.",
+        "hint": "healthy" if not problem else f"{len(problem)} machine(s) need attention — see list_vdi_machines --state.",
     }
 
 

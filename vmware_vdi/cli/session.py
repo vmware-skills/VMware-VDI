@@ -34,7 +34,7 @@ def _print_blast(blast: dict) -> None:
 
 @session_app.command("list")
 @cli_errors
-@audited("session_list")
+@audited("list_vdi_sessions")
 def session_list_cmd(
     user: Annotated[str, typer.Option("--user", help="Filter by AD user (substring)")] = "",
     pool: Annotated[str, typer.Option("--pool", help="Filter by pool/farm id")] = "",
@@ -56,7 +56,7 @@ def session_list_cmd(
 
 @session_app.command("logoff")
 @cli_errors
-@guarded("session_logoff", risk_level="high")
+@guarded("logoff_vdi_session", risk_level="high")
 def session_logoff_cmd(
     session_id: Annotated[str, typer.Option("--id", help="Session id")] = "",
     user: Annotated[str, typer.Option("--user", help="Log off all sessions of this AD user")] = "",
@@ -85,7 +85,7 @@ def session_logoff_cmd(
 
 @session_app.command("disconnect")
 @cli_errors
-@guarded("session_disconnect", risk_level="medium")
+@guarded("disconnect_vdi_session", risk_level="medium")
 def session_disconnect_cmd(
     session_id: Annotated[str, typer.Option("--id", help="Session id")] = "",
     user: Annotated[str, typer.Option("--user", help="Disconnect all sessions of this AD user")] = "",
@@ -114,7 +114,7 @@ def session_disconnect_cmd(
 
 @session_app.command("message")
 @cli_errors
-@guarded("session_send_message", risk_level="low")
+@guarded("send_vdi_session_message", risk_level="low")
 def session_message_cmd(
     message: Annotated[str, typer.Argument(help="Message text")],
     user: Annotated[str, typer.Option("--user", help="Message all sessions of this AD user")] = "",

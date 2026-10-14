@@ -23,7 +23,7 @@ def fetch_all(client: Any, path: str, params: dict | None = None, *, page_size: 
     * ``added == 0`` — a page brought no row with a new ``id``. A server that ignores
       ``page``/``size`` re-returns its whole list every time; without this guard, a list
       of ≥``page_size`` rows would look "full" on every page and loop to the cap,
-      returning the estate duplicated ~100× (which would inflate ``pool_push_image``'s
+      returning the estate duplicated ~100× (which would inflate ``push_desktop_pool_image``'s
       blast-radius preview by the same factor). Dedup-by-id makes the result correct
       regardless, and this guard makes it cheap (2 GETs, not 100).
 

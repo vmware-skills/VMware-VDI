@@ -55,7 +55,7 @@ radius, are double-confirmed at the CLI, and are audit-logged.
 ## Quick Install
 
 ```bash
-uv tool install vmware-vdi==1.3.0
+uv tool install vmware-vdi==2.0.0
 vmware-vdi init      # friendly setup: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 ```
@@ -123,29 +123,29 @@ is wrong — re-run `vmware-vdi init --force`.
 
 | Category | Tools | R/W |
 |----------|-------|:---:|
-| Monitoring | `health_summary`, `session_list`, `session_get`, `machine_list`, `machine_get`, `event_list` | Read |
-| Statistics | `session_stats`, `pool_utilization` | Read |
-| Management (read) | `pool_list`, `pool_get`, `farm_list`, `app_pool_list`, `entitlement_list`, `image_list`, `ad_user_search` | Read |
-| Tasks (read) | `task_status` | Read |
-| Ops actions | `session_logoff`, `session_disconnect`, `session_send_message`, `machine_reset`, `machine_maintenance`, `machine_remove` | Write |
-| Management (write) | `pool_set_enabled`, `entitlement_add`, `entitlement_remove` | Write |
-| Tasks (write) | `pool_push_image`, `task_cancel` | Write |
+| Monitoring | `get_vdi_health_summary`, `list_vdi_sessions`, `get_vdi_session`, `list_vdi_machines`, `get_vdi_machine`, `list_vdi_events` | Read |
+| Statistics | `get_vdi_session_stats`, `get_desktop_pool_utilization` | Read |
+| Management (read) | `list_desktop_pools`, `get_desktop_pool`, `list_farms`, `list_app_pools`, `list_entitlements`, `list_vdi_images`, `search_ad_users` | Read |
+| Tasks (read) | `get_vdi_task_status` | Read |
+| Ops actions | `logoff_vdi_session`, `disconnect_vdi_session`, `send_vdi_session_message`, `reset_vdi_machine`, `set_vdi_machine_maintenance`, `remove_vdi_machine` | Write |
+| Management (write) | `set_desktop_pool_enabled`, `add_entitlement`, `remove_entitlement` | Write |
+| Tasks (write) | `push_desktop_pool_image`, `cancel_vdi_task` | Write |
 
 **List envelope**: every `*_list` tool returns `{items, returned, limit, total, truncated, hint}` — read
 rows from `items` and check `truncated` before concluding a listing is complete; empty `items` with
 `truncated:false` means checked-and-none, not a failure. Lists are fetched with server-side pagination.
 
-**Blast radius (normative)**: `pool_push_image` recreates **every desktop in the pool** — the highest
+**Blast radius (normative)**: `push_desktop_pool_image` recreates **every desktop in the pool** — the highest
 single-call blast radius in the family. Its preview states affected-desktop and in-session counts
 before any confirm, plus `blast_radius.occupancy`: `determined` when those counts can be believed,
 `unknown` when session rows exist that belong to neither a desktop pool nor a farm and so cannot be
 ruled out of this pool. An `unknown` occupancy makes `in_session_count` a lower bound and refuses
-`confirm=true` — check `session_list`, or pass `acknowledge_unknown_occupancy=true`, which is audited.
+`confirm=true` — check `list_vdi_sessions`, or pass `acknowledge_unknown_occupancy=true`, which is audited.
 Machines that name no desktop pool (`unattributed_desktops`) make the desktop count "at least N" and
 refuse `confirm=true` with no override.
 
-**Confirmation gate (MCP)**: the ten gated writes (`session_logoff`/`disconnect`, `machine_reset`/
-`maintenance`/`remove`, `pool_set_enabled`, `pool_push_image`, `task_cancel`, `entitlement_add`/`remove`)
+**Confirmation gate (MCP)**: the ten gated writes (`logoff_vdi_session`/`disconnect`, `reset_vdi_machine`/
+`maintenance`/`remove`, `set_desktop_pool_enabled`, `push_desktop_pool_image`, `cancel_vdi_task`, `add_entitlement`/`remove`)
 take `confirm` (default `false`). A call without it returns `blast_radius` — identity, counts, ids (up to
 20), `blockers`, `unmeasured` — and changes nothing; the acting response carries it too. Show it to the
 user and pass `confirm=true` only after they agree: the user asking earlier is not agreement, they have
@@ -153,8 +153,8 @@ not seen it. If anything the blast radius depends on could not be read (a machin
 user, a task's state, a pool's enabled flag, the pool's entitlements), `confirm=true` is refused.
 
 **Read/write split**: 16 read-only tools (`[READ]` docstring marker), 11 modify state. All writes are
-audit-logged; destructive ones (`session_logoff`, `machine_reset`, `machine_remove`, `pool_set_enabled`
-disable, `entitlement_remove`, `pool_push_image`, `task_cancel`) require CLI double-confirmation and
+audit-logged; destructive ones (`logoff_vdi_session`, `reset_vdi_machine`, `remove_vdi_machine`, `set_desktop_pool_enabled`
+disable, `remove_entitlement`, `push_desktop_pool_image`, `cancel_vdi_task`) require CLI double-confirmation and
 support `--dry-run`.
 
 ## CLI Quick Reference
@@ -190,7 +190,7 @@ Full list: `references/cli-reference.md`.
   Horizon admin role with write privilege, or keep the read-only account for read commands only.
 - **`session list --pool` or a push-image preview shows 0 where you expect users** — on your Horizon
   version a field name may differ; this is a beta known-limitation, please file an issue with the raw
-  `session_get` output so the projection can be pinned.
+  `get_vdi_session` output so the projection can be pinned.
 
 ## Audit & Safety
 

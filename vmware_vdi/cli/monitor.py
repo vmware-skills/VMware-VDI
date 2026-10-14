@@ -14,7 +14,7 @@ entitlement_app = typer.Typer(help="Horizon pool entitlements (read).")
 
 
 @cli_errors
-@audited("health_summary")
+@audited("get_vdi_health_summary")
 def health_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """One-glance VDI health summary."""
     from vmware_vdi.ops.monitor import health_summary
@@ -29,7 +29,7 @@ def health_cmd(target: TargetOption = None, config: ConfigOption = None) -> None
 
 
 @cli_errors
-@audited("session_stats")
+@audited("get_vdi_session_stats")
 def stats_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """Session statistics (concurrency by state/protocol, busiest pools)."""
     from vmware_vdi.ops.monitor import session_stats
@@ -43,7 +43,7 @@ def stats_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
 
 
 @cli_errors
-@audited("pool_utilization")
+@audited("get_desktop_pool_utilization")
 def utilization_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """Per-pool desktop utilization."""
     from vmware_vdi.ops.monitor import pool_utilization
@@ -55,7 +55,7 @@ def utilization_cmd(target: TargetOption = None, config: ConfigOption = None) ->
 
 
 @cli_errors
-@audited("event_list")
+@audited("list_vdi_events")
 def events_cmd(
     severity: Annotated[str, typer.Option("--severity", help="ERROR|WARNING|...")] = "",
     target: TargetOption = None,
@@ -73,7 +73,7 @@ def events_cmd(
 
 @farm_app.command("list")
 @cli_errors
-@audited("farm_list")
+@audited("list_farms")
 def farm_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List RDS farms."""
     from vmware_vdi.ops.farms import list_farms
@@ -86,7 +86,7 @@ def farm_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> N
 
 @entitlement_app.command("list")
 @cli_errors
-@audited("entitlement_list")
+@audited("list_entitlements")
 def entitlement_list_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     target: TargetOption = None,

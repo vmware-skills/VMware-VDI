@@ -132,7 +132,7 @@ def _radius(client: HorizonClient, pool_id: str, ad_ids: list[str], operation: s
 def _refuse_unmeasured(tool: str, radius: dict) -> None:
     refuse_unless_measured(
         tool, f"pool '{radius['pool_name'] or sanitize(radius['pool_id'], 100)}'", radius,
-        "Run entitlement_list for the pool; retry once it lists who is entitled.",
+        "Run list_entitlements for the pool; retry once it lists who is entitled.",
     )
 
 
@@ -152,7 +152,7 @@ def entitle(
     radius = _radius(client, pool_id, ad_user_or_group_ids, "entitle")
     if not confirm:
         return {"action": "preview", "would_entitle": change, "blast_radius": radius, "hint": PREVIEW_HINT}
-    _refuse_unmeasured("entitlement_add", radius)
+    _refuse_unmeasured("add_entitlement", radius)
     client.post(_BASE, json_data=_spec(pool_id, ad_user_or_group_ids))
     if audit_logger is not None:
         audit_logger.log(target=target_name, operation="entitlement_add", resource=pool_id,
@@ -171,12 +171,12 @@ def unentitle(
 ) -> dict:
     """Revoke pool access from AD user/group SID(s). Preview unless confirm=True."""
     if not ad_user_or_group_ids:
-        raise EntitlementError("Provide ad_user_or_group_ids (SIDs from entitlement_list).")
+        raise EntitlementError("Provide ad_user_or_group_ids (SIDs from list_entitlements).")
     change = {"pool_id": pool_id, "ad_user_or_group_ids": ad_user_or_group_ids}
     radius = _radius(client, pool_id, ad_user_or_group_ids, "unentitle")
     if not confirm:
         return {"action": "preview", "would_unentitle": change, "blast_radius": radius, "hint": PREVIEW_HINT}
-    _refuse_unmeasured("entitlement_remove", radius)
+    _refuse_unmeasured("remove_entitlement", radius)
     client.delete(_BASE, json_data=_spec(pool_id, ad_user_or_group_ids))
     if audit_logger is not None:
         audit_logger.log(target=target_name, operation="entitlement_remove", resource=pool_id,

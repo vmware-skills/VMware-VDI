@@ -1,6 +1,6 @@
-"""The blast-radius guard on pool_push_image must measure occupancy, not assume it.
+"""The blast-radius guard on push_desktop_pool_image must measure occupancy, not assume it.
 
-Real-hardware review finding, 2026-08-30. ``pool_push_image`` recreates every
+Real-hardware review finding, 2026-08-30. ``push_desktop_pool_image`` recreates every
 desktop in a pool — the largest single-call blast radius in this family — and
 the only thing standing between an operator and doing that to a pool full of
 working people is the ``in_session_users`` number printed in the preview.

@@ -78,8 +78,8 @@ def task_cancel(
                 "blast_radius": radius,
                 "hint": f"{PREVIEW_HINT} Work the task already applied is not rolled back."}
     refuse_unless_measured(
-        "task_cancel", f"task '{sanitize(task_id, 100)}' on pool '{sanitize(pool_id, 100)}'", radius,
-        "Check it with task_status and retry once its type and state read.",
+        "cancel_vdi_task", f"task '{sanitize(task_id, 100)}' on pool '{sanitize(pool_id, 100)}'", radius,
+        "Check it with get_vdi_task_status and retry once its type and state read.",
     )
     client.post(f"{_BASE}/{pool_id}/tasks/{task_id}/action/cancel")
     if audit_logger is not None:

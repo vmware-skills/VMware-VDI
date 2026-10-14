@@ -8,7 +8,7 @@ Verified Horizon 8 endpoints (developer.broadcom.com operation index):
     POST /rest/inventory/v1/desktop-pools/action/disable        — body: [pool_id, ...]
     POST /rest/inventory/v1/desktop-pools/{id}/action/apply-image — apply the pending/current image
 
-``pool_push_image`` (apply-image) recreates every desktop in the pool → the highest
+``push_desktop_pool_image`` (apply-image) recreates every desktop in the pool → the highest
 single-call blast radius in the family (security HLD §15). Its preview is NORMATIVE:
 it must state the affected-desktop and in-session counts before confirm, and it must
 distinguish a measured occupancy from one it could not establish — see ``_pool_blast``.
@@ -56,7 +56,7 @@ def list_pools(client: HorizonClient, *, limit: int = 50, offset: int = 0) -> di
 
 
 def get_pool(client: HorizonClient, pool_id: str) -> dict:
-    """One pool by id — same projection as pool_list. Teaching 404 on a wrong id."""
+    """One pool by id — same projection as list_desktop_pools. Teaching 404 on a wrong id."""
     return _summary(client.get(f"{_BASE}/{pool_id}"))
 
 
@@ -66,7 +66,7 @@ def _require_pool(client: HorizonClient, pool_id: str) -> dict:
     Only a 404 *from this GET* means the id is wrong. The same status also arrives
     from ``POST /rest/login`` when nothing answers at that path — a wrong host or
     port, or a Horizon 7 server with no ``/rest`` API — because the login happens
-    lazily inside this call. Re-labelling that as "pool not found, run pool_list"
+    lazily inside this call. Re-labelling that as "pool not found, run list_desktop_pools"
     restores the exact circular advice the login fix removed, and makes it sound
     specific about an id that is perfectly valid. Matching on the path keeps the
     login diagnosis intact (形态 #7).
@@ -78,7 +78,7 @@ def _require_pool(client: HorizonClient, pool_id: str) -> dict:
         if exc.status_code != 404 or exc.path != path:
             raise
         raise PoolError(
-            f"Pool id '{sanitize(pool_id, 100)}' not found. Run pool_list for current pool ids."
+            f"Pool id '{sanitize(pool_id, 100)}' not found. Run list_desktop_pools for current pool ids."
         ) from exc
 
 
@@ -112,8 +112,8 @@ def set_pool_enabled(
         return {"action": "preview", "would_set": {"pool": pool, "enabled": enabled},
                 "blast_radius": radius, "hint": PREVIEW_HINT}
     refuse_unless_measured(
-        "pool_set_enabled", f"pool '{pool['name'] or sanitize(pool_id, 100)}'", radius,
-        "Check the pool with pool_get; retry once its enabled flag reads.",
+        "set_desktop_pool_enabled", f"pool '{pool['name'] or sanitize(pool_id, 100)}'", radius,
+        "Check the pool with get_desktop_pool; retry once its enabled flag reads.",
     )
     client.post(f"{_BASE}/action/{'enable' if enabled else 'disable'}", json_data=[pool_id])
     if audit_logger is not None:
@@ -244,14 +244,14 @@ def push_image(
         if unread:
             hint = (
                 f"This recreates {desktops} desktop(s): {blast['desktops_note']} Nothing was "
-                f"changed. Check those machines with machine_get; confirm=True is refused until "
+                f"changed. Check those machines with get_vdi_machine; confirm=True is refused until "
                 f"every desktop can be placed in a pool."
             )
         elif unknown:
             hint = (
                 f"This recreates {desktops} desktop(s). Who is logged in "
                 f"could not be determined: {blast['occupancy_note']} Nothing was changed. Check "
-                f"session_list and show blast_radius to the user; only if they decide to push "
+                f"list_vdi_sessions and show blast_radius to the user; only if they decide to push "
                 f"anyway, re-run with confirm=True and acknowledge_unknown_occupancy=True."
             )
         else:
@@ -264,16 +264,16 @@ def push_image(
             "blast_radius": blast, "hint": hint,
         }
     refuse_unless_measured(
-        "pool_push_image", f"pool '{pool['name'] or sanitize(pool_id, 100)}'",
+        "push_desktop_pool_image", f"pool '{pool['name'] or sanitize(pool_id, 100)}'",
         {**blast, "unmeasured": unread},
-        "Check those machines with machine_get (or machine_list); retry once each one names "
+        "Check those machines with get_vdi_machine (or list_vdi_machines); retry once each one names "
         "its desktop pool. acknowledge_unknown_occupancy does not cover this.",
     )
     if unknown and not acknowledge_unknown_occupancy:
         raise PoolError(
             f"Refusing to recreate every desktop in pool '{pool['name'] or sanitize(pool_id, 100)}' "
             f"while its occupancy could not be determined: {blast['occupancy_note']} "
-            f"Run session_list to check who is connected, or re-run with "
+            f"Run list_vdi_sessions to check who is connected, or re-run with "
             f"acknowledge_unknown_occupancy=True to push regardless."
         )
     body = {"stop_on_first_error": stop_on_error, "logoff_policy": logoff_policy.upper()}
@@ -287,4 +287,4 @@ def push_image(
                                      "acknowledged_unknown_occupancy": bool(unknown and acknowledge_unknown_occupancy),
                                      "logoff_policy": logoff_policy.upper()}, result="ok")
     return {"action": "apply-image", "pool": pool, "blast_radius": blast,
-            "hint": f"Track progress with task_status(pool_id='{pool_id}')."}
+            "hint": f"Track progress with get_vdi_task_status(pool_id='{pool_id}')."}

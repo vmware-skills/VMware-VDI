@@ -3,12 +3,12 @@
 A write CLI command must route through vmware_policy's guard() + audit_call() —
 the same enforcement @vmware_tool gives the MCP surface — so ``vmware-vdi session
 logoff`` run through Bash is authorized and audited to ~/.vmware/audit.db
-exactly like the ``session_logoff`` MCP tool.
+exactly like the ``logoff_vdi_session`` MCP tool.
 
 It must also be guarded under the MCP tool's *name*. A deny rule names an
 operation; ``@guarded`` without an explicit name authorizes and audits under
 the Python function name (``session_logoff_cmd``), so a rule written against
-``session_logoff`` refused the agent and let the same logoff through the CLI,
+``logoff_vdi_session`` refused the agent and let the same logoff through the CLI,
 and the one audit sink recorded the two surfaces under two names.
 
 The write set is DERIVED, never hand-listed (踩坑 #43): a tool annotated
@@ -328,7 +328,7 @@ def test_ast_reader_agrees_with_the_decorator():
 
 
 def test_one_deny_rule_naming_the_mcp_tool_stops_the_cli_command(tmp_path, monkeypatch):
-    """The point of the naming rule, end to end: deny ``session_logoff`` and the CLI is refused too.
+    """The point of the naming rule, end to end: deny ``logoff_vdi_session`` and the CLI is refused too.
 
     The refusal happens in guard(), before the command body — so the connection
     helper must never be reached. Before the fix the CLI was guarded as
@@ -343,7 +343,7 @@ def test_one_deny_rule_naming_the_mcp_tool_stops_the_cli_command(tmp_path, monke
 
     rules = tmp_path / "rules.yaml"
     rules.write_text(
-        'deny:\n  - name: no-logoff\n    operations: ["session_logoff"]\n    reason: frozen\n',
+        'deny:\n  - name: no-logoff\n    operations: ["logoff_vdi_session"]\n    reason: frozen\n',
         encoding="utf-8",
     )
     monkeypatch.setattr(pm, "_engine", pm.PolicyEngine(rules))

@@ -30,7 +30,7 @@ def _print_blast(blast: dict) -> None:
 
 @machine_app.command("list")
 @cli_errors
-@audited("machine_list")
+@audited("list_vdi_machines")
 def machine_list_cmd(
     pool: Annotated[str, typer.Option("--pool", help="Filter by pool id")] = "",
     state: Annotated[str, typer.Option("--state", help="Machine state, e.g. AGENT_UNREACHABLE")] = "",
@@ -55,7 +55,7 @@ def _ids(machine_id: str) -> list[str]:
 
 @machine_app.command("reset")
 @cli_errors
-@guarded("machine_reset", risk_level="high")
+@guarded("reset_vdi_machine", risk_level="high")
 def machine_reset_cmd(
     machine_id: Annotated[str, typer.Option("--id", help="Machine id")],
     target: TargetOption = None,
@@ -78,7 +78,7 @@ def machine_reset_cmd(
 
 @machine_app.command("maintenance")
 @cli_errors
-@guarded("machine_maintenance", risk_level="medium")
+@guarded("set_vdi_machine_maintenance", risk_level="medium")
 def machine_maintenance_cmd(
     machine_id: Annotated[str, typer.Option("--id", help="Machine id")],
     enabled: Annotated[bool, typer.Option("--enter/--exit", help="Enter or exit maintenance")],
@@ -105,7 +105,7 @@ def machine_maintenance_cmd(
 
 @machine_app.command("remove")
 @cli_errors
-@guarded("machine_remove", risk_level="high")
+@guarded("remove_vdi_machine", risk_level="high")
 def machine_remove_cmd(
     machine_id: Annotated[str, typer.Option("--id", help="Machine id")],
     target: TargetOption = None,

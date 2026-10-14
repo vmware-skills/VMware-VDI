@@ -5,19 +5,19 @@ only ever applied to the first half.
 
 The earlier round fixed ``HorizonClient._login``: a 404 there means nothing
 answers at ``/rest/login`` — wrong host, wrong port, or a Horizon 7 server that
-has no ``/rest`` API — and the old message told the operator to "run pool_list
+has no ``/rest`` API — and the old message told the operator to "run list_desktop_pools
 and copy an exact id", which logs in first and so reproduces the error one API
 call per lap.
 
-That fix holds on the read path, where ``pool_get`` / ``machine_get`` /
-``session_list`` let the exception through untouched. It does not hold on the
+That fix holds on the read path, where ``get_desktop_pool`` / ``get_vdi_machine`` /
+``list_vdi_sessions`` let the exception through untouched. It does not hold on the
 write path. Every write op first validates its target ids with a per-id GET
 inside a helper shaped like::
 
     except VdiApiError as exc:
         if exc.status_code != 404:
             raise
-        raise PoolError("Pool id '…' not found. Run pool_list for current pool ids.")
+        raise PoolError("Pool id '…' not found. Run list_desktop_pools for current pool ids.")
 
 A failed login raises ``VdiApiError(status_code=404)`` from inside that GET, so
 the helper catches it and replaces the login diagnosis with exactly the sentence
@@ -28,8 +28,8 @@ names an id that is perfectly valid.
 This is the family's most repeated shape: one instance of a pattern fixed while
 its siblings keep the defect (形态 #7). The three helpers are ``pools._require_pool``,
 ``machines._resolve`` and ``sessions._resolve_ids``; between them they gate
-pool_set_enabled, pool_push_image, machine_reset, machine_set_maintenance,
-machine_remove, session_logoff, session_disconnect and session_send_message.
+set_desktop_pool_enabled, push_desktop_pool_image, reset_vdi_machine, machine_set_maintenance,
+remove_vdi_machine, logoff_vdi_session, disconnect_vdi_session and send_vdi_session_message.
 
 The tests run against a real ``HorizonClient`` over a mock transport rather than
 a hand-raised exception, so they exercise the actual login → ops path. The
@@ -91,37 +91,37 @@ def _logged_in_but_id_is_wrong(monkeypatch):
 #: not-found message points at. One entry per operation, so a helper fixed in
 #: one module and not the others fails here rather than in production.
 WRITES = {
-    "pool_set_enabled": (
+    "set_desktop_pool_enabled": (
         lambda c: P.set_pool_enabled(c, pool_id="pool-1", enabled=False, confirm=True),
-        "pool_list",
+        "list_desktop_pools",
     ),
-    "pool_push_image": (
+    "push_desktop_pool_image": (
         lambda c: P.push_image(c, pool_id="pool-1", confirm=True),
-        "pool_list",
+        "list_desktop_pools",
     ),
-    "machine_reset": (
+    "reset_vdi_machine": (
         lambda c: M.reset_machines(c, machine_ids=["m-1"], confirm=True),
-        "machine_list",
+        "list_vdi_machines",
     ),
     "machine_set_maintenance": (
         lambda c: M.set_maintenance(c, machine_ids=["m-1"], enabled=True, confirm=True),
-        "machine_list",
+        "list_vdi_machines",
     ),
-    "machine_remove": (
+    "remove_vdi_machine": (
         lambda c: M.remove_machines(c, machine_ids=["m-1"], confirm=True),
-        "machine_list",
+        "list_vdi_machines",
     ),
-    "session_logoff": (
+    "logoff_vdi_session": (
         lambda c: S.logoff_sessions(c, session_ids=["s-1"], confirm=True),
-        "session_list",
+        "list_vdi_sessions",
     ),
-    "session_disconnect": (
+    "disconnect_vdi_session": (
         lambda c: S.disconnect_sessions(c, session_ids=["s-1"], confirm=True),
-        "session_list",
+        "list_vdi_sessions",
     ),
-    "session_send_message": (
+    "send_vdi_session_message": (
         lambda c: S.send_message(c, session_ids=["s-1"], message="maintenance in 10 min"),
-        "session_list",
+        "list_vdi_sessions",
     ),
 }
 

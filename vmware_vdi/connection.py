@@ -58,7 +58,7 @@ def _hint_for_status(status_code: int) -> str:
     if status_code == 404:
         return (
             "Verify the id — list the parent collection first (e.g. the "
-            "pool_list / session_list / machine_list tools) and copy an exact id."
+            "list_desktop_pools / list_vdi_sessions / list_vdi_machines tools) and copy an exact id."
         )
     if status_code == 400:
         return "Bad request — check the parameters/payload against the tool's parameter descriptions."
@@ -143,8 +143,8 @@ class HorizonClient:
                 if status in (404, 405):
                     # _hint_for_status is written for resource calls, where 404
                     # genuinely means "wrong id". Reached from here it told the
-                    # user to run pool_list and copy an id — a login has no id,
-                    # and pool_list logs in first, so it is the call that just
+                    # user to run list_desktop_pools and copy an id — a login has no id,
+                    # and list_desktop_pools logs in first, so it is the call that just
                     # failed. Following the advice reproduced the error
                     # (2026-08-30). On the login endpoint the same status means
                     # nothing answers at that path. Kept terse: the MCP layer

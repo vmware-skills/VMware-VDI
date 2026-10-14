@@ -11,7 +11,7 @@ from vmware_vdi.mcp_server._shared import _audit, _get_connection, _safe_error, 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def machine_list(
+def list_vdi_machines(
     pool: Optional[str] = None,
     state: Optional[str] = None,
     limit: int = 50,
@@ -36,22 +36,22 @@ def machine_list(
 
         return list_machines(_get_connection(target), pool=pool, state=state, limit=limit, offset=offset)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "machine_list")}
+        return {"error": _safe_error(exc, "list_vdi_machines")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def machine_get(machine_id: str, target: Optional[str] = None) -> dict:
+def get_vdi_machine(machine_id: str, target: Optional[str] = None) -> dict:
     """[READ] One Horizon desktop machine by id (teaching 404 on a wrong id).
 
-    Same projection as one machine_list row — id, name, pool_id, state, assigned user,
+    Same projection as one list_vdi_machines row — id, name, pool_id, state, assigned user,
     agent_version, base_image — fetched with a single GET instead of scanning the estate.
     Use it to re-check one machine after a write, or when you already hold an id.
 
     Args:
-        machine_id: Horizon machine id (the opaque 'id' of a machine_list row, not the
+        machine_id: Horizon machine id (the opaque 'id' of a list_vdi_machines row, not the
             desktop's display name and not the vCenter VM name). A wrong id returns a
-            404 whose hint tells you to re-run machine_list for exact ids.
+            404 whose hint tells you to re-run list_vdi_machines for exact ids.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
@@ -59,12 +59,12 @@ def machine_get(machine_id: str, target: Optional[str] = None) -> dict:
 
         return get_machine(_get_connection(target), machine_id)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "machine_get")}
+        return {"error": _safe_error(exc, "get_vdi_machine")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="high")
-def machine_reset(
+def reset_vdi_machine(
     machine_ids: list[str],
     confirm: bool = False,
     target: Optional[str] = None,
@@ -79,7 +79,7 @@ def machine_reset(
     For a graceful in-guest reboot use vmware-aiops (the vCenter VM). Audited.
 
     Args:
-        machine_ids: Machine ids to reset (from machine_list).
+        machine_ids: Machine ids to reset (from list_vdi_machines).
         confirm: False (default) returns the blast radius and changes nothing. True resets.
         target: Horizon target from config.yaml; omit to use the default.
     """
@@ -89,12 +89,12 @@ def machine_reset(
         return reset_machines(_get_connection(target), machine_ids=machine_ids, confirm=confirm,
                               audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "machine_reset")}
+        return {"error": _safe_error(exc, "reset_vdi_machine")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="medium")
-def machine_maintenance(
+def set_vdi_machine_maintenance(
     machine_ids: list[str],
     enabled: bool,
     confirm: bool = False,
@@ -111,7 +111,7 @@ def machine_maintenance(
     Audited.
 
     Args:
-        machine_ids: Machine ids (from machine_list).
+        machine_ids: Machine ids (from list_vdi_machines).
         enabled: True enters maintenance; False exits.
         confirm: False (default) returns the blast radius and changes nothing. True applies it.
         target: Horizon target from config.yaml; omit to use the default.
@@ -122,12 +122,12 @@ def machine_maintenance(
         return set_maintenance(_get_connection(target), machine_ids=machine_ids, enabled=enabled,
                                confirm=confirm, audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "machine_maintenance")}
+        return {"error": _safe_error(exc, "set_vdi_machine_maintenance")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="high")
-def machine_remove(
+def remove_vdi_machine(
     machine_ids: list[str],
     confirm: bool = False,
     target: Optional[str] = None,
@@ -142,7 +142,7 @@ def machine_remove(
     Audited.
 
     Args:
-        machine_ids: Machine ids to remove (from machine_list).
+        machine_ids: Machine ids to remove (from list_vdi_machines).
         confirm: False (default) returns the blast radius and changes nothing. True removes.
         target: Horizon target from config.yaml; omit to use the default.
     """
@@ -152,4 +152,4 @@ def machine_remove(
         return remove_machines(_get_connection(target), machine_ids=machine_ids, confirm=confirm,
                                audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "machine_remove")}
+        return {"error": _safe_error(exc, "remove_vdi_machine")}

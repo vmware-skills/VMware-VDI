@@ -71,7 +71,7 @@ def list_machines(
 
 
 def get_machine(client: HorizonClient, machine_id: str) -> dict:
-    """One machine by id — same projection as machine_list. Teaching 404 on a wrong id."""
+    """One machine by id — same projection as list_vdi_machines. Teaching 404 on a wrong id."""
     return _summary(client.get(f"{_BASE}/{machine_id}"))
 
 
@@ -80,10 +80,10 @@ def _resolve(client: HorizonClient, machine_ids: list[str]) -> list[dict]:
 
     Only a 404 *from the machine GET* means the id is wrong; a failed login raises
     the same status from inside this call, and calling that a missing machine sends
-    the operator to machine_list, which logs in first. See ``pools._require_pool``.
+    the operator to list_vdi_machines, which logs in first. See ``pools._require_pool``.
     """
     if not machine_ids:
-        raise MachineError("Provide at least one machine_id. Run machine_list to find ids.")
+        raise MachineError("Provide at least one machine_id. Run list_vdi_machines to find ids.")
     found, missing = [], []
     for mid in machine_ids:
         path = f"{_BASE}/{mid}"
@@ -97,7 +97,7 @@ def _resolve(client: HorizonClient, machine_ids: list[str]) -> list[dict]:
             missing.append(mid)
     if missing:
         raise MachineError(
-            f"Machine id(s) not found: {sanitize(str(missing), 200)}. Run machine_list for current ids."
+            f"Machine id(s) not found: {sanitize(str(missing), 200)}. Run list_vdi_machines for current ids."
         )
     return found
 
@@ -137,7 +137,7 @@ def blast_radius(targets: list[dict], operation: str) -> dict:
     if unread:
         notes["assignment_note"] = (
             f"{len(unread)} machine(s) carry no user/assigned_user field: who is assigned to "
-            f"them was not read (that is not 'nobody assigned'). Check with machine_get."
+            f"them was not read (that is not 'nobody assigned'). Check with get_vdi_machine."
         )
     return {
         "operation": operation,
@@ -159,7 +159,7 @@ def _gate(verb: str, targets: list[dict], confirm: bool) -> tuple[dict, dict]:
     if confirm:
         refuse_unless_measured(
             f"machine {verb}", f"{radius['machine_count']} machine(s)", radius,
-            "Check each machine with machine_get; retry once its state reads.",
+            "Check each machine with get_vdi_machine; retry once its state reads.",
         )
     return blast, radius
 
@@ -248,6 +248,6 @@ def remove_machines(
     if failed is not None:
         raise MachineError(
             f"Removed {removed} then failed before the rest ({failed}). "
-            f"Re-run machine_remove for the remaining ids after checking machine_list."
+            f"Re-run remove_vdi_machine for the remaining ids after checking list_vdi_machines."
         )
     return {"action": "remove", "removed": removed, "affected": blast, "blast_radius": radius}

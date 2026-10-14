@@ -36,7 +36,7 @@ previews its blast radius, and is authorized by the Horizon account's own RBAC r
 | **Tasks** | task status · **image push** · task cancel |
 
 Reads are strictly non-destructive. Writes **preview their blast radius**, double-confirm at the CLI, and
-are audit-logged to `~/.vmware/audit.db`. `pool_push_image` recreates *every desktop in a pool* — the
+are audit-logged to `~/.vmware/audit.db`. `push_desktop_pool_image` recreates *every desktop in a pool* — the
 highest single-call blast radius in the family — and its preview states affected-desktop and
 in-session counts before any confirm, together with `occupancy`: `determined` when those counts
 can be believed, `unknown` when sessions exist that cannot be attributed to any pool or farm. An

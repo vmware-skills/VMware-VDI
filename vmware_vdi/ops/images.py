@@ -1,7 +1,7 @@
 """Instant-clone image catalog (read). Verified:
     GET /rest/external/v1/base-vms        — golden base VMs
     GET /rest/external/v1/base-snapshots  — snapshots on those base VMs
-These are the images pool_push_image can apply.
+These are the images push_desktop_pool_image can apply.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ def list_images(client: HorizonClient, *, base_vm_id: str | None = None) -> dict
     """List instant-clone base VMs and their snapshots (the golden-image catalog).
 
     Optionally scope snapshots to one base_vm_id. Returns {base_vms, snapshots} with counts —
-    the images available to pool_push_image.
+    the images available to push_desktop_pool_image.
     """
     base_vms = [
         {"id": b.get("id"), "name": sanitize(str(b.get("name") or ""), 200), "path": sanitize(str(b.get("path") or ""), 300)}

@@ -11,10 +11,10 @@ from vmware_vdi.mcp_server._shared import _audit, _get_connection, _safe_error, 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def task_status(pool_id: str, task_id: Optional[str] = None, target: Optional[str] = None) -> dict:
+def get_vdi_task_status(pool_id: str, task_id: Optional[str] = None, target: Optional[str] = None) -> dict:
     """[READ] Status of a pool's long task (image push / provisioning), or all tasks for the pool.
 
-    Horizon tasks are pool-scoped. Give task_id (from pool_push_image or a prior task_status) for one
+    Horizon tasks are pool-scoped. Give task_id (from push_desktop_pool_image or a prior get_vdi_task_status) for one
     task; omit it to list all tasks for the pool.
 
     Args:
@@ -27,12 +27,12 @@ def task_status(pool_id: str, task_id: Optional[str] = None, target: Optional[st
 
         return _s(_get_connection(target), pool_id, task_id)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "task_status")}
+        return {"error": _safe_error(exc, "get_vdi_task_status")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": True})
 @vmware_tool(risk_level="medium")
-def task_cancel(
+def cancel_vdi_task(
     pool_id: str,
     task_id: str,
     confirm: bool = False,
@@ -50,7 +50,7 @@ def task_cancel(
 
     Args:
         pool_id: The desktop-pool id.
-        task_id: The task id (from task_status).
+        task_id: The task id (from get_vdi_task_status).
         confirm: False (default) returns the blast radius and changes nothing. True cancels.
         target: Horizon target from config.yaml; omit to use the default.
     """
@@ -60,4 +60,4 @@ def task_cancel(
         return _c(_get_connection(target), pool_id=pool_id, task_id=task_id,
                   confirm=confirm, audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "task_cancel")}
+        return {"error": _safe_error(exc, "cancel_vdi_task")}

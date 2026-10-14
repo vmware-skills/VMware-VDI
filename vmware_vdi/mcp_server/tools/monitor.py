@@ -11,11 +11,11 @@ from vmware_vdi.mcp_server._shared import _get_connection, _safe_error, mcp
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def health_summary(target: Optional[str] = None) -> dict:
+def get_vdi_health_summary(target: Optional[str] = None) -> dict:
     """[READ] One-glance Horizon VDI health: session totals by state, problem machines, pool availability.
 
     The first thing to call for "how is VDI right now?". Aggregates sessions, machines, and pools into
-    a compact status. Drill into problems with machine_list --state or session_list.
+    a compact status. Drill into problems with list_vdi_machines --state or list_vdi_sessions.
 
     Args:
         target: Horizon target from config.yaml; omit to use the default.
@@ -25,15 +25,15 @@ def health_summary(target: Optional[str] = None) -> dict:
 
         return _h(_get_connection(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "health_summary")}
+        return {"error": _safe_error(exc, "get_vdi_health_summary")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def session_stats(target: Optional[str] = None) -> dict:
+def get_vdi_session_stats(target: Optional[str] = None) -> dict:
     """[READ] Session statistics: concurrency by state / protocol, current concurrent, busiest pools.
 
-    The reporting counterpart to session_list — aggregate numbers, not per-session rows.
+    The reporting counterpart to list_vdi_sessions — aggregate numbers, not per-session rows.
 
     Args:
         target: Horizon target from config.yaml; omit to use the default.
@@ -43,15 +43,15 @@ def session_stats(target: Optional[str] = None) -> dict:
 
         return _s(_get_connection(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "session_stats")}
+        return {"error": _safe_error(exc, "get_vdi_session_stats")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def pool_utilization(target: Optional[str] = None) -> dict:
+def get_desktop_pool_utilization(target: Optional[str] = None) -> dict:
     """[READ] Per-pool capacity: total / available / in-use / error machines and utilization %.
 
-    The "am I running out of desktops?" view, sorted by utilization. Drill in with machine_list --pool.
+    The "am I running out of desktops?" view, sorted by utilization. Drill in with list_vdi_machines --pool.
 
     Args:
         target: Horizon target from config.yaml; omit to use the default.
@@ -61,12 +61,12 @@ def pool_utilization(target: Optional[str] = None) -> dict:
 
         return _u(_get_connection(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "pool_utilization")}
+        return {"error": _safe_error(exc, "get_desktop_pool_utilization")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def event_list(
+def list_vdi_events(
     severity: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
@@ -87,4 +87,4 @@ def event_list(
 
         return list_events(_get_connection(target), severity=severity, limit=limit, offset=offset)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "event_list")}
+        return {"error": _safe_error(exc, "list_vdi_events")}

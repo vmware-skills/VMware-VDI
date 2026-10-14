@@ -32,8 +32,8 @@ def test_h2_ops_and_config_errors_pass_through_safe_error():
     from vmware_vdi.ops.sessions import SessionError
 
     for exc in (
-        SessionError("No active sessions for alice. Run session_list."),
-        P.PoolError("Pool id 'x' not found. Run pool_list."),
+        SessionError("No active sessions for alice. Run list_vdi_sessions."),
+        P.PoolError("Pool id 'x' not found. Run list_desktop_pools."),
         MachineError("Machine id(s) not found."),
         ConfigError("Password not found. Set environment variable: VMWARE_VDI_LAB_PASSWORD"),
         FileNotFoundError("Config file not found: ~/.vmware-vdi/config.yaml"),
@@ -92,7 +92,7 @@ def test_n1_fetch_all_non_paginating_server_no_duplication():
     """N1: a server that ignores page/size (re-returns its full list) must not loop/duplicate.
 
     Was the fix's own regression: a ≥page_size list looked 'full' every page → ~100x dupes,
-    inflating pool_push_image's blast preview by the same factor.
+    inflating push_desktop_pool_image's blast preview by the same factor.
     """
     full = [{"id": i} for i in range(1000)]  # exactly page_size, same list every request
     c = _FakeClient({"/x": lambda params: full})

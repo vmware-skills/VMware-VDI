@@ -11,7 +11,7 @@ from vmware_vdi.mcp_server._shared import _get_connection, _safe_error, mcp
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def app_pool_list(limit: int = 50, offset: int = 0, target: Optional[str] = None) -> dict:
+def list_app_pools(limit: int = 50, offset: int = 0, target: Optional[str] = None) -> dict:
     """[READ] List published application pools: id, name, farm, enabled, executable path. Paginated.
 
     Args:
@@ -24,13 +24,13 @@ def app_pool_list(limit: int = 50, offset: int = 0, target: Optional[str] = None
 
         return list_application_pools(_get_connection(target), limit=limit, offset=offset)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "app_pool_list")}
+        return {"error": _safe_error(exc, "list_app_pools")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def image_list(base_vm_id: Optional[str] = None, target: Optional[str] = None) -> dict:
-    """[READ] List instant-clone base VMs and snapshots (the golden-image catalog for pool_push_image).
+def list_vdi_images(base_vm_id: Optional[str] = None, target: Optional[str] = None) -> dict:
+    """[READ] List instant-clone base VMs and snapshots (the golden-image catalog for push_desktop_pool_image).
 
     Args:
         base_vm_id: Optionally scope snapshots to one base VM.
@@ -41,13 +41,13 @@ def image_list(base_vm_id: Optional[str] = None, target: Optional[str] = None) -
 
         return list_images(_get_connection(target), base_vm_id=base_vm_id)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "image_list")}
+        return {"error": _safe_error(exc, "list_vdi_images")}
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def ad_user_search(name: str, limit: int = 25, target: Optional[str] = None) -> dict:
-    """[READ] Resolve AD users/groups by name to their SIDs — needed to entitle a pool (entitlement_add).
+def search_ad_users(name: str, limit: int = 25, target: Optional[str] = None) -> dict:
+    """[READ] Resolve AD users/groups by name to their SIDs — needed to entitle a pool (add_entitlement).
 
     Args:
         name: Name substring to search for.
@@ -59,4 +59,4 @@ def ad_user_search(name: str, limit: int = 25, target: Optional[str] = None) -> 
 
         return search_ad(_get_connection(target), name, limit=limit)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "ad_user_search")}
+        return {"error": _safe_error(exc, "search_ad_users")}

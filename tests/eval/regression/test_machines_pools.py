@@ -1,7 +1,7 @@
 """Regression evals for the machines + pools verticals.
 
 Pins runtime paths ∈ verified spec (踩坑 #36), projections, preview-vs-confirm, blast
-radius, bad-id refusal, idempotent pool noop, and the normative pool_push_image
+radius, bad-id refusal, idempotent pool noop, and the normative push_desktop_pool_image
 blast-radius preview (affected desktops + in-session users) from security HLD §15.
 """
 

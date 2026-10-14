@@ -26,7 +26,7 @@ task_app = typer.Typer(help="Horizon pool tasks (image push / provisioning).")
 
 @app_pool_app.command("list")
 @cli_errors
-@audited("app_pool_list")
+@audited("list_app_pools")
 def app_pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List published application pools."""
     from vmware_vdi.ops.apps import list_application_pools
@@ -38,7 +38,7 @@ def app_pool_list_cmd(target: TargetOption = None, config: ConfigOption = None) 
 
 
 @cli_errors
-@audited("image_list")
+@audited("list_vdi_images")
 def images_cmd(target: TargetOption = None, config: ConfigOption = None) -> None:
     """List instant-clone base VMs and snapshots (the image catalog)."""
     from vmware_vdi.ops.images import list_images
@@ -54,7 +54,7 @@ def images_cmd(target: TargetOption = None, config: ConfigOption = None) -> None
 
 
 @cli_errors
-@audited("ad_user_search")
+@audited("search_ad_users")
 def ad_search_cmd(
     name: Annotated[str, typer.Argument(help="AD user/group name substring")],
     target: TargetOption = None,
@@ -70,7 +70,7 @@ def ad_search_cmd(
 
 @entitlement_app.command("add")
 @cli_errors
-@guarded("entitlement_add", risk_level="medium")
+@guarded("add_entitlement", risk_level="medium")
 def entitlement_add_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     sid: Annotated[list[str], typer.Option("--sid", help="AD SID (repeat; from ad-search)")],
@@ -92,7 +92,7 @@ def entitlement_add_cmd(
 
 @entitlement_app.command("remove")
 @cli_errors
-@guarded("entitlement_remove", risk_level="medium")
+@guarded("remove_entitlement", risk_level="medium")
 def entitlement_remove_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     sid: Annotated[list[str], typer.Option("--sid", help="AD SID (repeat; from entitlement list)")],
@@ -115,7 +115,7 @@ def entitlement_remove_cmd(
 
 @task_app.command("status")
 @cli_errors
-@audited("task_status")
+@audited("get_vdi_task_status")
 def task_status_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     task_id: Annotated[str, typer.Option("--task", help="Task id (omit to list all)")] = "",
@@ -136,7 +136,7 @@ def task_status_cmd(
 
 @task_app.command("cancel")
 @cli_errors
-@guarded("task_cancel", risk_level="medium")
+@guarded("cancel_vdi_task", risk_level="medium")
 def task_cancel_cmd(
     pool_id: Annotated[str, typer.Option("--pool", help="Desktop pool id")],
     task_id: Annotated[str, typer.Option("--task", help="Task id")],

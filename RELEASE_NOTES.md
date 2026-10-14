@@ -1,3 +1,47 @@
+## v2.0.0 — MCP tools renamed verb-first
+
+Every MCP tool in the family now follows one convention: the verb comes first (`list_…`, `get_…`, `set_…`),
+and a domain word is added wherever two skills would otherwise expose the same name. In this skill pools
+become **desktop pools** (vmware-avi has load-balancer pools), and sessions, machines, tasks, events, images
+and the health summary gain **`vdi`** (other skills have sessions, tasks and events). All 27 tools are renamed;
+none is added or removed, and parameters, annotations and behaviour are unchanged — `push_desktop_pool_image`
+keeps the same confirm gate as `pool_push_image`.
+
+| Old name | New name |
+|---|---|
+| `ad_user_search` | `search_ad_users` |
+| `app_pool_list` | `list_app_pools` |
+| `entitlement_add` | `add_entitlement` |
+| `entitlement_list` | `list_entitlements` |
+| `entitlement_remove` | `remove_entitlement` |
+| `event_list` | `list_vdi_events` |
+| `farm_list` | `list_farms` |
+| `health_summary` | `get_vdi_health_summary` |
+| `image_list` | `list_vdi_images` |
+| `machine_get` | `get_vdi_machine` |
+| `machine_list` | `list_vdi_machines` |
+| `machine_maintenance` | `set_vdi_machine_maintenance` |
+| `machine_remove` | `remove_vdi_machine` |
+| `machine_reset` | `reset_vdi_machine` |
+| `pool_get` | `get_desktop_pool` |
+| `pool_list` | `list_desktop_pools` |
+| `pool_push_image` | `push_desktop_pool_image` |
+| `pool_set_enabled` | `set_desktop_pool_enabled` |
+| `pool_utilization` | `get_desktop_pool_utilization` |
+| `session_disconnect` | `disconnect_vdi_session` |
+| `session_get` | `get_vdi_session` |
+| `session_list` | `list_vdi_sessions` |
+| `session_logoff` | `logoff_vdi_session` |
+| `session_send_message` | `send_vdi_session_message` |
+| `session_stats` | `get_vdi_session_stats` |
+| `task_cancel` | `cancel_vdi_task` |
+| `task_status` | `get_vdi_task_status` |
+
+**CLI commands are unchanged.** The CLI's audit rows now record the new MCP tool names.
+
+**Deny rules** in `~/.vmware/rules.yaml` written with old names keep working with vmware-policy ≥ 1.18.0 (it
+matches both names); `vmware-audit policy` lists any rule that now matches more.
+
 ## v1.3.0 — the MCP instructions name the configured targets
 
 `initialize` hands the client this server's `instructions`, and for a skill whose every tool takes a target that

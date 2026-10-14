@@ -6,7 +6,7 @@ The JSON schema is the only part of a tool an agent can actually read. Prose in
 the docstring body explains the tool; it says nothing about a *parameter*. A
 measurement across the family's 327 tools found ``description`` coverage on
 parameter schemas at 0% — every word of guidance was in prose the schema never
-carried — and this skill's ``machine_get`` and ``pool_get`` were among them — both taking an
+carried — and this skill's ``get_vdi_machine`` and ``get_desktop_pool`` were among them — both taking an
 opaque Horizon id that is neither the display name nor the vCenter VM name,
 with nothing in the schema to say so.
 

@@ -2,9 +2,9 @@
 
 Real-hardware finding, 2026-08-30. Authentication failed with HTTP 404 and the
 remedy offered was "Verify the id — list the parent collection first (e.g. the
-pool_list / session_list / machine_list tools) and copy an exact id."
+list_desktop_pools / list_vdi_sessions / list_vdi_machines tools) and copy an exact id."
 
-A login has no id. And `pool_list` is the call that just failed — it logs in
+A login has no id. And `list_desktop_pools` is the call that just failed — it logs in
 first. Following the advice reproduces the error, one API call per lap.
 
 The cause is a fall-through: `_login` hands every status to `_hint_for_status`,
@@ -65,8 +65,8 @@ def test_a_404_on_login_is_not_blamed_on_an_object_id(monkeypatch):
         "a login has no id; this is the generic resource-404 hint reaching a "
         "path it was never written for"
     )
-    assert "pool_list" not in message, (
-        "pool_list logs in first — it is the call that just failed"
+    assert "list_desktop_pools" not in message, (
+        "list_desktop_pools logs in first — it is the call that just failed"
     )
     assert "cs.example" in message
 

@@ -23,9 +23,9 @@ Horizon admin role and every write is refused at the Connection Server, un-bypas
 control cannot be stepped around by a shell.
 
 ### Destructive-operation safety
-`session_logoff`, `machine_reset`, `machine_remove`, `pool_set_enabled` (disable), `entitlement_remove`,
-`pool_push_image`, and `task_cancel` preview their blast radius, require CLI double-confirmation, and
-support `--dry-run`. `pool_push_image` (recreates every desktop in a pool) reports affected-desktop and
+`logoff_vdi_session`, `reset_vdi_machine`, `remove_vdi_machine`, `set_desktop_pool_enabled` (disable), `remove_entitlement`,
+`push_desktop_pool_image`, and `cancel_vdi_task` preview their blast radius, require CLI double-confirmation, and
+support `--dry-run`. `push_desktop_pool_image` (recreates every desktop in a pool) reports affected-desktop and
 in-session counts before any confirm, and reports whether occupancy could be established at all: when
 session rows cannot be attributed to a pool or farm the count is a lower bound, so the confirm is
 refused rather than passed on an unverified zero. The override
@@ -33,8 +33,8 @@ refused rather than passed on an unverified zero. The override
 that name no desktop pool make the desktop count a lower bound too; that refuses the confirm and no
 override covers it.
 
-On MCP the ten gated tools (the ones above plus `session_disconnect`, `machine_maintenance` and
-`entitlement_add`) take `confirm: bool = False`: a call without it returns `blast_radius` (identity,
+On MCP the ten gated tools (the ones above plus `disconnect_vdi_session`, `set_vdi_machine_maintenance` and
+`add_entitlement`) take `confirm: bool = False`: a call without it returns `blast_radius` (identity,
 counts, identifiers up to 20, `blockers`, `unmeasured`) and changes nothing. `confirm=true` is refused
 when a field the blast radius depends on could not be read, so an unread value is never acted on as if it
 were an empty one. Refusals return the error envelope and are audited as failures.

@@ -18,7 +18,7 @@ Two variables, because the skill writes two audit trails:
 
 This repo got the sandbox late (2026-09-11). The first test here to run a
 CLI write through ``@guarded`` — the deny-rule test in
-``test_cli_writes_guarded.py`` — wrote a ``session_logoff denied`` row into the
+``test_cli_writes_guarded.py`` — wrote a ``logoff_vdi_session denied`` row into the
 operator's real ``~/.vmware/audit.db`` on every run: 14 rows in one day, from
 the author's runs and from review runs, before anyone noticed. The other
 suites in this family had the sandbox; this one had never needed it, which is

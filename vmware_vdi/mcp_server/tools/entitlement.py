@@ -11,28 +11,28 @@ from vmware_vdi.mcp_server._shared import _audit, _get_connection, _safe_error, 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="low")
-def entitlement_list(pool_id: str, limit: int = 50, offset: int = 0, target: Optional[str] = None) -> dict:
+def list_entitlements(pool_id: str, limit: int = 50, offset: int = 0, target: Optional[str] = None) -> dict:
     """[READ] List the AD users/groups entitled to a desktop pool (who can access it). Paginated.
 
-    A wrong pool id returns a teaching 404. Use pool_list for pool ids.
+    A wrong pool id returns a teaching 404. Use list_desktop_pools for pool ids.
 
     Args:
-        pool_id: The desktop-pool id (from pool_list).
+        pool_id: The desktop-pool id (from list_desktop_pools).
         limit: Page size (default 50).
         offset: Page offset.
         target: Horizon target from config.yaml; omit to use the default.
     """
     try:
-        from vmware_vdi.ops.entitlements import list_entitlements
+        from vmware_vdi.ops.entitlements import list_entitlements as _ops_list_entitlements
 
-        return list_entitlements(_get_connection(target), pool_id, limit=limit, offset=offset)
+        return _ops_list_entitlements(_get_connection(target), pool_id, limit=limit, offset=offset)
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "entitlement_list")}
+        return {"error": _safe_error(exc, "list_entitlements")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="medium")
-def entitlement_add(
+def add_entitlement(
     pool_id: str,
     ad_user_or_group_ids: list[str],
     confirm: bool = False,
@@ -40,7 +40,7 @@ def entitlement_add(
 ) -> dict:
     """[WRITE] Grant desktop-pool access to AD user/group SID(s).
 
-    Get SIDs from ad_user_search. A bare call returns blast_radius (pool identity, which
+    Get SIDs from search_ad_users. A bare call returns blast_radius (pool identity, which
     principals are already entitled and which are new) and grants nothing; confirm=True
     grants. Refused when the pool's current entitlements cannot be read.
     Show blast_radius to the user and wait for their decision. Do not set confirm=True
@@ -49,8 +49,8 @@ def entitlement_add(
     Audited.
 
     Args:
-        pool_id: The desktop-pool id (from pool_list).
-        ad_user_or_group_ids: AD SIDs to entitle (from ad_user_search).
+        pool_id: The desktop-pool id (from list_desktop_pools).
+        ad_user_or_group_ids: AD SIDs to entitle (from search_ad_users).
         confirm: False (default) returns the blast radius and changes nothing. True grants.
         target: Horizon target from config.yaml; omit to use the default.
     """
@@ -60,12 +60,12 @@ def entitlement_add(
         return entitle(_get_connection(target), pool_id=pool_id, ad_user_or_group_ids=ad_user_or_group_ids,
                        confirm=confirm, audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "entitlement_add")}
+        return {"error": _safe_error(exc, "add_entitlement")}
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True, "openWorldHint": True})
 @vmware_tool(risk_level="medium")
-def entitlement_remove(
+def remove_entitlement(
     pool_id: str,
     ad_user_or_group_ids: list[str],
     confirm: bool = False,
@@ -73,7 +73,7 @@ def entitlement_remove(
 ) -> dict:
     """[WRITE] Revoke desktop-pool access from AD user/group SID(s).
 
-    Get SIDs from entitlement_list. A bare call returns blast_radius (pool identity, which
+    Get SIDs from list_entitlements. A bare call returns blast_radius (pool identity, which
     principals lose access and which were not entitled) and revokes nothing; confirm=True
     revokes. Refused when the pool's current entitlements cannot be read.
     Show blast_radius to the user and wait for their decision. Do not set confirm=True
@@ -82,8 +82,8 @@ def entitlement_remove(
     Audited.
 
     Args:
-        pool_id: The desktop-pool id (from pool_list).
-        ad_user_or_group_ids: AD SIDs to remove (from entitlement_list).
+        pool_id: The desktop-pool id (from list_desktop_pools).
+        ad_user_or_group_ids: AD SIDs to remove (from list_entitlements).
         confirm: False (default) returns the blast radius and changes nothing. True revokes.
         target: Horizon target from config.yaml; omit to use the default.
     """
@@ -93,4 +93,4 @@ def entitlement_remove(
         return unentitle(_get_connection(target), pool_id=pool_id, ad_user_or_group_ids=ad_user_or_group_ids,
                          confirm=confirm, audit_logger=_audit, target_name=_target_name(target))
     except Exception as exc:  # noqa: BLE001
-        return {"error": _safe_error(exc, "entitlement_remove")}
+        return {"error": _safe_error(exc, "remove_entitlement")}

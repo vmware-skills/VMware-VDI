@@ -41,7 +41,7 @@ def _summary(s: dict) -> dict:
         "id": s.get("id"),
         # Horizon 8's documented SessionInfo has no user_name — it carries user_id.
         # See ops._fields.user_of; reading only the readable names made the `user`
-        # filter here, and pool_push_image's occupancy guard, match nothing.
+        # filter here, and push_desktop_pool_image's occupancy guard, match nothing.
         "user": sanitize(user_of(s), 200),
         "type": s.get("session_type") or s.get("type"),  # DESKTOP / APPLICATION
         "state": s.get("session_state") or s.get("state"),  # CONNECTED / DISCONNECTED / PENDING
@@ -76,7 +76,7 @@ def list_sessions(
 
 
 def get_session(client: HorizonClient, session_id: str) -> dict:
-    """One session by id — same projection as session_list. Teaching 404 on a wrong id."""
+    """One session by id — same projection as list_vdi_sessions. Teaching 404 on a wrong id."""
     return _summary(client.get(f"{_BASE}/{session_id}"))
 
 
@@ -88,7 +88,7 @@ def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str
 
     Only a 404 *from the session GET* means the id is wrong; a failed login raises
     the same status from inside this call, and calling that a missing session sends
-    the operator to session_list, which logs in first. See ``pools._require_pool``.
+    the operator to list_vdi_sessions, which logs in first. See ``pools._require_pool``.
     """
     if session_ids:
         found, missing = [], []
@@ -103,7 +103,7 @@ def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str
         if missing:
             raise SessionError(
                 f"Session id(s) not found: {sanitize(str(missing), 200)}. "
-                "Run session_list for current session ids."
+                "Run list_vdi_sessions for current session ids."
             )
         return found
     if user:
@@ -113,7 +113,7 @@ def _resolve_ids(client: HorizonClient, session_ids: list[str] | None, user: str
         if not matched:
             raise SessionError(
                 f"No active sessions for user matching '{sanitize(user, 100)}'. "
-                "Run session_list to see who is connected."
+                "Run list_vdi_sessions to see who is connected."
             )
         return matched
     raise SessionError("Provide either session_ids or user to identify the target session(s).")
@@ -181,7 +181,7 @@ def _act(
         }
     refuse_unless_measured(
         f"session {action}", f"{radius['session_count']} session(s)", radius,
-        "Check the session with session_get; a session whose user cannot be read "
+        "Check the session with get_vdi_session; a session whose user cannot be read "
         "cannot be shown to the operator before it is ended.",
     )
     ids = [t["id"] for t in targets]
