@@ -145,9 +145,9 @@ def entitle(
     audit_logger: Any = None,
     target_name: str = "",
 ) -> dict:
-    """Grant pool access to AD user/group SID(s) (from search_ad). Preview unless confirm=True."""
+    """Grant pool access to AD user/group SID(s) (from the search_ad_users tool). Preview unless confirm=True."""
     if not ad_user_or_group_ids:
-        raise EntitlementError("Provide ad_user_or_group_ids (SIDs from search_ad).")
+        raise EntitlementError("Provide ad_user_or_group_ids (SIDs from the search_ad_users tool).")
     change = {"pool_id": pool_id, "ad_user_or_group_ids": ad_user_or_group_ids}
     radius = _radius(client, pool_id, ad_user_or_group_ids, "entitle")
     if not confirm:
