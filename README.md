@@ -18,7 +18,7 @@ server** (for AI agents) and a **CLI** (for help-desk and scripting). Part of th
 
 ## Upgrading to 2.0
 
-2.0 renames 27 MCP tools so every name starts with a verb (e.g. `ad_user_search` → `search_ad_users`, `app_pool_list` → `list_app_pools`, `entitlement_add` → `add_entitlement`). The full old → new table is in
+2.0 renames all 27 MCP tools so every name starts with a verb (e.g. `ad_user_search` → `search_ad_users`, `app_pool_list` → `list_app_pools`, `entitlement_add` → `add_entitlement`). The full old → new table is in
 [RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first). Nothing else changes: same tools, parameters,
 safety gates and CLI commands. If an agent prompt, script or `~/.vmware/rules.yaml` names a tool, update it — though deny
 rules written with the old names keep working with vmware-policy ≥ 1.18 (`vmware-audit policy` lists any rule the
