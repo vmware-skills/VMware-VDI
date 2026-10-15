@@ -117,7 +117,7 @@ def set_pool_enabled(
     )
     client.post(f"{_BASE}/action/{'enable' if enabled else 'disable'}", json_data=[pool_id])
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation="pool_set_enabled", resource=pool_id,
+        audit_logger.log(target=target_name, operation="set_desktop_pool_enabled", resource=pool_id,
                          parameters={"enabled": enabled}, result="ok")
     return {"action": "set", "pool": pool, "enabled": enabled, "blast_radius": radius}
 
@@ -279,7 +279,7 @@ def push_image(
     body = {"stop_on_first_error": stop_on_error, "logoff_policy": logoff_policy.upper()}
     client.post(f"{_BASE}/{pool_id}/action/apply-image", json_data=body)
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation="pool_push_image", resource=pool_id,
+        audit_logger.log(target=target_name, operation="push_desktop_pool_image", resource=pool_id,
                          parameters={"affected_desktops": blast["affected_desktops"],
                                      "in_session_count": blast["in_session_count"],
                                      "in_session_users": blast["in_session_users"],

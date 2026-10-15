@@ -83,6 +83,6 @@ def task_cancel(
     )
     client.post(f"{_BASE}/{pool_id}/tasks/{task_id}/action/cancel")
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation="task_cancel", resource=f"{pool_id}/{task_id}",
+        audit_logger.log(target=target_name, operation="cancel_vdi_task", resource=f"{pool_id}/{task_id}",
                          parameters={"task_type": radius["task_type"], "state": radius["state"]}, result="ok")
     return {"action": "cancel", "pool_id": pool_id, "task_id": task_id, "blast_radius": radius}

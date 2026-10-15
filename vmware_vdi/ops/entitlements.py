@@ -155,7 +155,7 @@ def entitle(
     _refuse_unmeasured("add_entitlement", radius)
     client.post(_BASE, json_data=_spec(pool_id, ad_user_or_group_ids))
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation="entitlement_add", resource=pool_id,
+        audit_logger.log(target=target_name, operation="add_entitlement", resource=pool_id,
                          parameters={"principals": len(ad_user_or_group_ids)}, result="ok")
     return {"action": "entitle", "entitled": change, "blast_radius": radius}
 
@@ -179,6 +179,6 @@ def unentitle(
     _refuse_unmeasured("remove_entitlement", radius)
     client.delete(_BASE, json_data=_spec(pool_id, ad_user_or_group_ids))
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation="entitlement_remove", resource=pool_id,
+        audit_logger.log(target=target_name, operation="remove_entitlement", resource=pool_id,
                          parameters={"principals": len(ad_user_or_group_ids)}, result="ok")
     return {"action": "unentitle", "unentitled": change, "blast_radius": radius}

@@ -184,7 +184,10 @@ def _bulk_action(
                 "blast_radius": radius, "hint": PREVIEW_HINT}
     client.post(f"{_BASE}/action/{verb}", json_data=[t["id"] for t in targets])
     if audit_logger is not None:
-        audit_logger.log(target=target_name, operation=f"machine_{verb.replace('-', '_')}",
+        # reset is its own tool (reset_vdi_machine); the maintenance verbs share
+        # set_vdi_machine_maintenance, so they keep the direction in the label.
+        label = "reset_vdi_machine" if verb == "reset" else f"machine_{verb.replace('-', '_')}"
+        audit_logger.log(target=target_name, operation=label,
                          resource=",".join(machine_ids), parameters={"machine_count": blast["machine_count"]},
                          result="ok")
     return {"action": verb, "affected": blast, "blast_radius": radius}
@@ -240,7 +243,7 @@ def remove_machines(
         for t in targets:
             client.delete(f"{_BASE}/{t['id']}")
             if audit_logger is not None:
-                audit_logger.log(target=target_name, operation="machine_remove", resource=t["id"],
+                audit_logger.log(target=target_name, operation="remove_vdi_machine", resource=t["id"],
                                  parameters={"name": t["name"]}, result="ok")
             removed.append(t["id"])
     except Exception as exc:  # noqa: BLE001 — record partial progress, then re-raise a teaching error
