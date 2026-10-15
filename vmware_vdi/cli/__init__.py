@@ -54,11 +54,32 @@ def mcp_cmd(
         "--allow-write",
         help="With --expose read: comma-separated write tools to offer as well.",
     ),
+    transport: Optional[str] = typer.Option(
+        None,
+        "--transport",
+        help="stdio (default), https, or http (loopback only, behind a TLS reverse proxy). "
+        "https/http need a token: 'vmware-audit token create NAME'.",
+    ),
+    host: Optional[str] = typer.Option(None, "--host", help="Bind address (default 127.0.0.1)."),
+    port: Optional[int] = typer.Option(None, "--port", help="Port (default 8443)."),
+    cert: Optional[str] = typer.Option(None, "--cert", help="TLS certificate (PEM) for https."),
+    key: Optional[str] = typer.Option(None, "--key", help="TLS private key (PEM) for https."),
+    public_name: Optional[str] = typer.Option(
+        None,
+        "--public-name",
+        help="Host names clients use, comma-separated; other Host/Origin values are refused.",
+    ),
+    token_file: Optional[str] = typer.Option(
+        None, "--token-file", help="Token hash file (default $OPS_HOME/mcp-tokens)."
+    ),
 ) -> None:
-    """Run the MCP server (stdio). Point your MCP client here via the installed console script."""
+    """Run the MCP server: stdio by default (point your MCP client here), or --transport https."""
     from vmware_vdi.mcp_server.server import main
 
-    main(expose=expose, allow_write=allow_write)
+    main(
+        expose=expose, allow_write=allow_write, transport=transport, host=host, port=port,
+        cert=cert, key=key, public_name=public_name, token_file=token_file,
+    )
 
 
 # Ops verticals register their sub-apps here as they land.
