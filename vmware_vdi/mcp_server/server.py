@@ -13,6 +13,8 @@ from __future__ import annotations
 
 # Shared plumbing — re-exported so `from vmware_vdi.mcp_server.server import mcp, _get_connection, ...`
 # (and monkeypatch targets) keep resolving.
+from typing import Optional
+
 from vmware_vdi.mcp_server._shared import (  # noqa: F401
     _audit,
     _get_connection,
@@ -57,8 +59,10 @@ _DESCRIBED_PARAMS = describe_tool_parameters(mcp._tool_manager._tools)
 from vmware_vdi.policy_environment import _cached_config, _environment_for  # noqa: F401 — imported to register the resolver, and re-exported
 
 
-def main() -> None:
+def main(expose: Optional[str] = None, allow_write: Optional[str] = None) -> None:
     """Console-script entry point: serve the registered tools over stdio."""
+    from vmware_policy.exposure import apply_or_exit
+    apply_or_exit(mcp, skill="vdi", expose=expose, allow_write=allow_write)
     mcp.run()
 
 

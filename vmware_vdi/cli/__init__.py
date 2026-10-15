@@ -7,7 +7,7 @@ work through the installed console script on PATH.
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 from vmware_policy import audited, cli_local
@@ -42,11 +42,23 @@ def doctor_cmd() -> None:
 
 @app.command("mcp")
 @cli_local("starts the MCP server; its tools audit themselves")
-def mcp_cmd() -> None:
+def mcp_cmd(
+    expose: Optional[str] = typer.Option(
+        None,
+        "--expose",
+        help="Which tools to offer: all (default) or read. Limits what clients see; "
+        "not authorization: the account's permissions still decide.",
+    ),
+    allow_write: Optional[str] = typer.Option(
+        None,
+        "--allow-write",
+        help="With --expose read: comma-separated write tools to offer as well.",
+    ),
+) -> None:
     """Run the MCP server (stdio). Point your MCP client here via the installed console script."""
     from vmware_vdi.mcp_server.server import main
 
-    main()
+    main(expose=expose, allow_write=allow_write)
 
 
 # Ops verticals register their sub-apps here as they land.
