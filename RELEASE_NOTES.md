@@ -1,3 +1,17 @@
+## Unreleased — calls on one target run side by side over HTTPS
+
+When `vmware-vdi mcp` serves the network (`--transport https` or `http`), calls no longer queue behind each other.
+Calls that name the same target, or name no target, now run side by side instead of one at a time (HLD §16
+D-13(2), via vmware-policy 1.22.0):
+
+- Each call gets its own session to the Horizon Connection Server for as long as it runs, so two calls never share a login.
+- Each target keeps up to `VMWARE_MCP_POOL_SIZE` sessions (default 2). Each session is a login on the target, so
+  raise it only as far as the account's session limit allows.
+- A call that finds every session busy waits at most 300 s for one, then fails with a message saying so.
+- An expired access token is still renewed in place (refresh, then a fresh login), as before.
+
+stdio and the CLI are unchanged: one session per target, reused.
+
 ## v2.2.0 — serve MCP over HTTPS
 
 `vmware-vdi mcp` can now serve the network as well as stdio (HLD §16, via vmware-policy 1.21.0):

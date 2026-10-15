@@ -21,6 +21,7 @@ import time
 from typing import Any
 
 import httpx
+from vmware_policy.pool import SessionPool
 
 from vmware_vdi.config import AppConfig, TargetConfig, load_config
 
@@ -290,8 +291,23 @@ class HorizonClient:
         resp = self._request("DELETE", path, json_data=json_data, retries=retries)
         return resp.json() if resp.content else {}
 
+    def is_alive(self) -> bool:
+        """Whether this client can still be handed to a call.
+
+        No probe: an expired token is not a dead client, since ``_request``
+        refreshes (or logs in again) on a 401/403 by itself. Only a closed
+        client is dead.
+        """
+        return not self._client.is_closed
+
     def close(self) -> None:
-        """Log out (best-effort) and close the HTTP connection pool."""
+        """Log out (best-effort) and close the HTTP connection pool.
+
+        Safe on an expired session (the logout's error status is ignored) and
+        when already closed (the pool may close a client a second time).
+        """
+        if self._client.is_closed:
+            return
         if self._refresh_token:
             try:
                 self._client.post("/logout", json={"refresh_token": self._refresh_token})
@@ -301,11 +317,23 @@ class HorizonClient:
 
 
 class ConnectionManager:
-    """Manages connections to multiple Horizon Connection Server targets."""
+    """Manages connections to multiple Horizon Connection Server targets.
+
+    Clients come from a per-target :class:`~vmware_policy.pool.SessionPool`
+    (HLD §16 D-13(2)). An MCP call on a network transport holds one client for
+    its whole body, so two calls never share a session (a client refreshes its
+    access token in place on a 401/403). Outside a call (CLI, stdio) each target
+    keeps one cached client, as before.
+    """
 
     def __init__(self, config: AppConfig) -> None:
         self._config = config
-        self._clients: dict[str, HorizonClient] = {}
+        self._pool: SessionPool[HorizonClient] = SessionPool(
+            "vmware-vdi",
+            create=self._new_client,
+            is_alive=lambda client: client.is_alive(),
+            close=lambda client: client.close(),
+        )
 
     @classmethod
     def from_config(cls, config: AppConfig | None = None) -> ConnectionManager:
@@ -321,27 +349,23 @@ class ConnectionManager:
                 f"Configured targets: {configured or '(none)'}. Pass target=<name>, "
                 f"or set 'default_target' in ~/.vmware-vdi/config.yaml."
             )
-
-        if name in self._clients:
-            return self._clients[name]
-
-        target_cfg = self._config.get_target(name)
-        if target_cfg is None:
+        if self._config.get_target(name) is None:
             available = ", ".join(self._config.targets.keys())
             raise ValueError(
                 f"Target '{name}' not found. Available: {available or '(none)'}. "
                 f"Add a '{name}' entry under 'targets:' in ~/.vmware-vdi/config.yaml."
             )
+        return self._pool.get(name)
 
+    def _new_client(self, name: str) -> HorizonClient:
+        target_cfg = self._config.get_target(name)
+        if target_cfg is None:  # connect() checked; the config is not reloaded
+            raise ValueError(f"Target '{name}' not found.")
         # Resolve both halves of the credential together — a username left behind
         # by a rotation would pair with the new password and fail.
         password = target_cfg.get_password(name)
         username = target_cfg.get_username(name)
-        client = HorizonClient(target_cfg, password, username)
-        self._clients[name] = client
-        return client
+        return HorizonClient(target_cfg, password, username)
 
     def disconnect(self, target_name: str) -> None:
-        if target_name in self._clients:
-            self._clients[target_name].close()
-            del self._clients[target_name]
+        self._pool.discard(target_name)

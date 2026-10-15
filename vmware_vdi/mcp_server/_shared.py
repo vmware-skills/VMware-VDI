@@ -8,8 +8,10 @@ from the tool packages (they import *from* here) to avoid a circular import.
 from __future__ import annotations
 
 import logging
+import threading
 
 from mcp.server.fastmcp import FastMCP
+from vmware_policy.pool import PoolTimeoutError
 
 from vmware_vdi import __version__
 from vmware_vdi.config import ConfigError, load_config
@@ -91,14 +93,22 @@ mcp._mcp_server.version = __version__
 _audit = AuditLogger()
 
 _manager: ConnectionManager | None = None
+# Tools run in worker threads on a network transport: without the lock two
+# first calls could each build a manager, and one manager's pool would be lost
+# with its sessions still logged in.
+_manager_lock = threading.Lock()
 
 
 def _get_connection(target: str | None):
     """Lazy connection-manager helper — one manager per process, client per target."""
     global _manager
-    if _manager is None:
-        _manager = ConnectionManager.from_config()
-    return _manager.connect(target)
+    mgr = _manager
+    if mgr is None:
+        with _manager_lock:
+            if _manager is None:
+                _manager = ConnectionManager.from_config()
+            mgr = _manager
+    return mgr.connect(target)
 
 
 def _target_name(target: str | None) -> str:
@@ -115,7 +125,11 @@ def _safe_error(exc: Exception, tool: str) -> str:
     message, so it is surfaced verbatim. Any other exception is masked to avoid leaking
     internals, with the full detail going to the server log.
     """
-    if isinstance(exc, (VdiApiError, VdiOpsError, ConfigError, FileNotFoundError, ConnectionError, ValueError)):
+    # PoolTimeoutError is authored by vmware_policy.pool (target + remedy), not a raw library error.
+    if isinstance(
+        exc,
+        (VdiApiError, VdiOpsError, ConfigError, FileNotFoundError, ConnectionError, ValueError, PoolTimeoutError),
+    ):
         return str(exc)
     logger.exception("Unexpected error in tool %s", tool)
     return f"{tool} failed: an unexpected error occurred (see server log)."

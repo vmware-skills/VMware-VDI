@@ -77,6 +77,7 @@ def main(
         skill="vdi",
         expose=expose, allow_write=allow_write, transport=transport, host=host, port=port,
         cert=cert, key=key, public_name=public_name, token_file=token_file,
+        pooled=True,
     )
 
 
