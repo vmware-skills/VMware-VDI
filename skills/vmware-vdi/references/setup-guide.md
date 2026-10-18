@@ -5,7 +5,7 @@
 
 ## 1. Install
 ```bash
-uv tool install vmware-vdi==2.4.0
+uv tool install vmware-vdi==2.4.1
 ```
 
 ## 2. Connect (friendly wizard)
