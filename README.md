@@ -2,6 +2,8 @@
 
 # VMware VDI (Horizon)
 
+For a read-only check of this skill with your model and agent host, use the shared [model-fit self-test](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md) in the marketplace root.
+
 **AI-powered intelligent operations for VMware / Omnissa Horizon VDI** — manage desktop pools, RDS farms,
 published apps, **user sessions**, desktop machines, entitlements, instant-clone images, and Horizon
 events/health/statistics through the **Horizon 8 Connection Server REST API**. Ships as both an **MCP

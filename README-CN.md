@@ -2,6 +2,8 @@
 
 # VMware VDI (Horizon)
 
+要用自己的模型和 Agent 平台进行只读自测，请看 marketplace 根目录的[共享模型适配自测任务](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md)。
+
 AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RDS 农场、**用户会话**、桌面机器、授权、
 事件/健康/统计、即时克隆金像推送,通过 **Horizon 8 Connection Server REST API**(以 Horizon 8 为主,
 兼容最新 Omnissa Horizon,同一套 `/rest/v1` API)。MCP server + CLI,VMware skill 家族成员。
