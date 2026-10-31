@@ -21,6 +21,8 @@ metadata: {"openclaw":{"requires":{"anyBins":["vmware-vdi","uvx"]},"optional":{"
 
 # VMware VDI (Horizon)
 
+> Self-test: [guide](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md).
+
 > **Disclaimer**: Community-maintained open-source project, **not affiliated with, endorsed by, or
 > sponsored by VMware, Inc., Broadcom Inc., or Omnissa, LLC.** "VMware", "Horizon", and "Omnissa" are
 > trademarks of their respective owners. Source is publicly auditable under the MIT license.
