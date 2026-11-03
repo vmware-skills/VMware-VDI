@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests.eval.regression.test_mcp_writes_state_blast_radius import (  # noqa: F401 — fixtures
+from test_mcp_writes_state_blast_radius import (  # noqa: F401 — fixtures
     FakeHorizon,
     _is_preview,
     _refused,
