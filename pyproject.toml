@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vmware-vdi"
-version = "2.4.1"
+version = "2.4.2"
 description = "VMware/Omnissa Horizon VDI intelligent operations — pools, sessions, machines, entitlements, images (MCP + CLI)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Wei Zhou", email = "wei-wz.zhou@broadcom.com" }]
+authors = [{ name = "Wei Zhou", email = "zhouwei008@gmail.com" }]
 keywords = ["vmware", "omnissa", "horizon", "vdi", "desktop", "euc", "mcp", "ai-ops"]
 classifiers = [
     "Development Status :: 4 - Beta",

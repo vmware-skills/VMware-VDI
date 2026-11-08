@@ -1,5 +1,8 @@
-## Unreleased — entitlement response compatibility
+## v2.4.2 — entitlement response compatibility and proxy bypass (2026-11-08)
 
+* Update public author/project contact metadata to `zhouwei008@gmail.com`.
+
+### entitlement response compatibility
 * The Horizon REST client now honors system proxy bypass rules for the configured origin while preserving TLS verification and CA environment settings.
 
 * `list_entitlements` now reads the documented `{id, ad_user_or_group_ids}` response instead of returning an empty list. SID-only results retain unknown names/types, paginated principal results remain supported, and malformed entitlement data reports an error. Write previews share the same decoder and continue refusing unreadable entitlement state.
