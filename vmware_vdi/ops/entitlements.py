@@ -43,7 +43,12 @@ def list_entitlements(client: HorizonClient, pool_id: str, *, limit: int = 50, o
 
     A wrong pool id returns a teaching 404 via VdiApiError.
     """
-    rows = [_summary(e) for e in fetch_all(client, f"{_BASE}/{pool_id}")]
+    raw = _read_entitlement_rows(client, pool_id)
+    if raw is None or _principals(raw) is None:
+        raise EntitlementError(
+            "Current entitlements could not be read: the response did not contain valid principal IDs."
+        )
+    rows = [_summary(e) for e in raw]
     rows.sort(key=lambda r: r["principal"] or "")
     return _envelope(rows, limit=limit, offset=offset)
 
@@ -73,18 +78,17 @@ def _spec(pool_id: str, ad_ids: list[str]) -> list[dict]:
 
 def _principals(rows: list) -> set | None:
     ids = [(r.get("ad_user_or_group_id") or r.get("id")) if isinstance(r, dict) else None for r in rows]
-    if any(not i for i in ids):
+    if any(not isinstance(i, str) or not i for i in ids):
         return None
     return set(ids)
 
 
-def _read_entitled(client: HorizonClient, pool_id: str) -> set | None:
-    """The SIDs currently entitled to ``pool_id``, or None when the answer could not be read.
+def _read_entitlement_rows(client: HorizonClient, pool_id: str) -> list[dict] | None:
+    """Read the documented single object or every page of legacy principal rows.
 
     Two shapes are accepted: Horizon's ``EntitlementInfo`` (``{"id": <pool>,
     "ad_user_or_group_ids": [...]}``, one object, read whole) and a list of
-    per-principal rows (bare, or under ``results``/``items``), which is what
-    ``list_entitlements`` projects. A list is paginated like every Horizon
+    per-principal rows (bare, or under ``results``/``items``). A list is paginated like every Horizon
     collection, so it is read with ``fetch_all`` — every page, not the first one:
     a SID entitled on page 2 must not read as *not entitled*. Anything else —
     including a row with no principal id — is *unread*, not *nobody*: an empty set
@@ -93,14 +97,26 @@ def _read_entitled(client: HorizonClient, pool_id: str) -> set | None:
     path = f"{_BASE}/{pool_id}"
     data = client.get(path)
     if isinstance(data, dict):
-        ids = data.get("ad_user_or_group_ids")
-        if isinstance(ids, list) and all(isinstance(i, str) and i for i in ids):
-            return set(ids)
+        if "ad_user_or_group_ids" in data:
+            ids = data["ad_user_or_group_ids"]
+            if not isinstance(ids, list) or not all(isinstance(i, str) and i for i in ids):
+                return None
+            # EntitlementInfo supplies SIDs, not names or user/group types.
+            return [
+                {"ad_user_or_group_id": sid, "type": "UNKNOWN"}
+                for sid in dict.fromkeys(ids)
+            ]
         if not isinstance(data.get("results", data.get("items")), list):
             return None
     elif not isinstance(data, list):
         return None
-    return _principals(fetch_all(client, path))
+    return fetch_all(client, path)
+
+
+def _read_entitled(client: HorizonClient, pool_id: str) -> set | None:
+    """The entitled SIDs, or None when their current state cannot be measured."""
+    rows = _read_entitlement_rows(client, pool_id)
+    return _principals(rows) if rows is not None else None
 
 
 def _radius(client: HorizonClient, pool_id: str, ad_ids: list[str], operation: str) -> dict:

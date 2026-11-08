@@ -33,6 +33,9 @@ vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改�
 | **运维动作** | 会话 注销/断开/发消息、机器 重置/维护/移除 |
 | **任务** | 任务状态;镜像推送、任务取消 |
 
+授权查询支持 Horizon 的单个 `EntitlementInfo` 对象和分页的用户/组列表。
+接口只返回 SID 时，名称保留为空、类型标为 `UNKNOWN`；无法读取的响应会报错，不能解释为无人获授权。
+
 破坏性写操作预览爆炸半径、CLI 双重确认、`--dry-run`、统一审计到 `~/.vmware/audit.db`。
 `push_desktop_pool_image` 重建整池桌面,爆炸半径最高,预览报受影响桌面数 + 在线会话数,并给出 `occupancy`:
 `determined` 表示这两个数可信,`unknown` 表示存在既不属于任何桌面池、也不属于任何农场的会话行。
@@ -124,3 +127,8 @@ vmware-vdi mcp --expose read --allow-write add_entitlement
 
 ## License
 MIT
+
+## 系统代理绕过
+
+Horizon REST 客户端按操作系统的代理绕过列表直连配置的目标地址。
+TLS 校验仍由 `verify_ssl` 控制，`SSL_CERT_FILE` 等 CA 环境设置继续生效；其他地址保留原有代理路由。

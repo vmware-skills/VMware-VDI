@@ -47,6 +47,10 @@ previews its blast radius, and is authorized by the Horizon account's own RBAC r
 | **Ops actions** | session logoff / disconnect / message · machine reset / maintenance / remove |
 | **Tasks** | task status · **image push** · task cancel |
 
+Entitlement reads accept Horizon's single `EntitlementInfo` object as well as paginated principal rows.
+When Horizon returns only SIDs, principal names remain empty and types are `UNKNOWN`; an unreadable
+response is an error, rather than evidence that nobody is entitled.
+
 Reads are strictly non-destructive. Writes **preview their blast radius**, double-confirm at the CLI, and
 are audit-logged to `~/.vmware/audit.db`. `push_desktop_pool_image` recreates *every desktop in a pool* — the
 highest single-call blast radius in the family — and its preview states affected-desktop and
@@ -210,6 +214,12 @@ Tools not offered do not appear in the client's tool list. A bad value or an unk
 least-privilege.
 
 Details: `skills/vmware-vdi/references/setup-guide.md` ("Serving MCP over HTTPS", "Limiting which tools are offered").
+
+## System proxy bypass
+
+The Horizon REST client honors the operating system proxy bypass list for the configured origin.
+TLS verification still follows `verify_ssl`, and CA environment settings such as `SSL_CERT_FILE` remain active.
+Other origins retain their normal proxy routing.
 
 ## License
 
