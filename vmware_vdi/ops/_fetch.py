@@ -45,7 +45,9 @@ def fetch_all(client: Any, path: str, params: dict | None = None, *, page_size: 
         added = 0
         for row in data:
             rid = row.get("id") if isinstance(row, dict) else None
-            if rid is not None:
+            # Unexpected containers are not valid IDs. Preserve the row for
+            # the caller to classify instead of crashing while hashing it.
+            if isinstance(rid, (str, int)):
                 if rid in seen_ids:
                     continue
                 seen_ids.add(rid)

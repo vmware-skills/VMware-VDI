@@ -3,6 +3,10 @@
 27 MCP tools (16 read / 11 write) over the Horizon 8 Connection Server REST API. Every tool accepts an
 optional `target`. Typical response tokens are estimates for a small estate; lists paginate at 50.
 
+`list_entitlements` accepts the documented single `EntitlementInfo` object and paginated principal rows.
+SID-only objects have an empty principal name and type `UNKNOWN`; malformed responses report unreadable
+entitlements instead of an empty list. The pool's own `id` is never interpreted as a principal SID.
+
 ## Monitoring (6 read)
 | Tool | R/W | Returns | ~tokens |
 |------|:---:|---------|:------:|

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 import time
+import urllib.request
 from typing import Any
 
 import httpx
@@ -113,8 +114,15 @@ class HorizonClient:
         # httpx honours verify=False directly and emits no urllib3 InsecureRequestWarning,
         # so there is nothing to silence — importing urllib3 here (not a dependency) only
         # crashed every self-signed-cert target.
+        # Honor the system bypass list for this origin while retaining CA env settings.
+        mounts = None
+        if urllib.request.proxy_bypass(target.host):
+            origin = f"https://{target.host}:{target.port}"
+            mounts = {origin: httpx.HTTPTransport(verify=target.verify_ssl, trust_env=True)}
+
         self._client = httpx.Client(
             base_url=self._base_url,
+            mounts=mounts,
             verify=target.verify_ssl,
             timeout=httpx.Timeout(30.0),
         )
