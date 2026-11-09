@@ -79,11 +79,7 @@ Copy this configuration into your MCP client's local stdio settings. The client 
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "vmware-vdi==2.4.2",
-        "vmware-vdi-mcp"
-      ],
+      "args": ["--from", "vmware-vdi==2.4.2", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }

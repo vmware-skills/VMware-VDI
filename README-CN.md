@@ -71,11 +71,7 @@ vmware-vdi doctor
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "vmware-vdi==2.4.2",
-        "vmware-vdi-mcp"
-      ],
+      "args": ["--from", "vmware-vdi==2.4.2", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }
