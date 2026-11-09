@@ -18,6 +18,8 @@ server** (for AI agents) and a **CLI** (for help-desk and scripting). Part of th
 > GET-response field projections are defensive and pending validation against a live Connection Server
 > (a field-name mismatch yields empty results, not a crash — see the [beta note](#beta-note)).
 
+For field-projection problems, share only a minimal, redacted diagnostic example. Remove user identities, session IDs, machine/host names, internal addresses and credentials before opening an issue.
+
 ## Upgrading to 2.0
 
 2.0 renames all 27 MCP tools so every name starts with a verb (e.g. `ad_user_search` → `search_ad_users`, `app_pool_list` → `list_app_pools`, `entitlement_add` → `add_entitlement`). The full old → new table is in
@@ -71,7 +73,7 @@ state, a session's user, a task's type or state, a pool's enabled flag, a pool's
 ## Quick start
 
 ```bash
-uv tool install vmware-vdi
+uv tool install vmware-vdi==2.4.2
 vmware-vdi init      # friendly wizard: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 vmware-vdi health    # one-glance VDI health
@@ -137,8 +139,8 @@ REST **endpoints** are verified against the official Horizon Server API operatio
 **field names** (and a few write bodies) are defensive (`.get()` with fallbacks) and **pending validation
 against a live Connection Server**. On a field-name mismatch a list reads empty rather than crashing.
 First real-Horizon use should run `vmware-vdi init` and confirm the session/machine/pool projections;
-please [file an issue](https://github.com/vmware-skills/VMware-VDI/issues) with raw `*_get` output if a projection
-looks empty. Quality: 32 regression tests, ruff clean, bandit 0, tool endpoints pinned to a verified spec.
+please [file an issue](https://github.com/vmware-skills/VMware-VDI/issues) with a minimal, redacted `*_get` example if a projection
+looks empty. Remove user identities, session IDs, machine/host names, internal addresses and credentials before sharing. Quality: 32 regression tests, ruff clean, bandit 0, tool endpoints pinned to a verified spec.
 
 ## Companion skills
 

@@ -15,6 +15,8 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 > 待真机 Connection Server 验证(在真实 Horizon 上跑一次 `vmware-vdi init` 即可确认)。由家族 harness
 > 治理(审计 + 策略 + 教学性错误);读写授权交由 Horizon 管理账号的角色(RBAC)。
 
+字段投影异常只需提交最小化、脱敏后的诊断示例。发布 issue 前去掉用户身份、会话 ID、机器/主机名、内部地址和凭据。
+
 ## 升级到 2.0
 
 2.0 把全部 27 个 MCP 工具改成动词在前（例如 `ad_user_search` → `search_ad_users`, `app_pool_list` → `list_app_pools`, `entitlement_add` → `add_entitlement`），完整的新旧名对照表见
@@ -51,7 +53,7 @@ MCP 侧每个受控写工具都有 `confirm` 参数(默认 `false`)。不带它�
 
 ## 快速开始
 ```bash
-uv tool install vmware-vdi
+uv tool install vmware-vdi==2.4.2
 vmware-vdi init      # 友好向导:连接 Connection Server 并发现你的桌面池
 vmware-vdi doctor
 ```

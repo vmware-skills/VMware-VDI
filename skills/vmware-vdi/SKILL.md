@@ -191,8 +191,8 @@ Full list: `references/cli-reference.md`.
 - **A write is refused with "read-only role"** — that is RBAC working as designed. Point the target at a
   Horizon admin role with write privilege, or keep the read-only account for read commands only.
 - **`session list --pool` or a push-image preview shows 0 where you expect users** — on your Horizon
-  version a field name may differ; this is a beta known-limitation, please file an issue with the raw
-  `get_vdi_session` output so the projection can be pinned.
+  version a field name may differ; this is a beta known-limitation, please file an issue with a minimal, redacted
+  `get_vdi_session` example so the projection can be pinned. Remove user identities, session IDs, machine/host names, internal addresses and all credentials before sharing; retain only the fields needed to reproduce the mismatch.
 
 ## Audit & Safety
 

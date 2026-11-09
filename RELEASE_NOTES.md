@@ -7,6 +7,13 @@
 
 * `list_entitlements` now reads the documented `{id, ad_user_or_group_ids}` response instead of returning an empty list. SID-only results retain unknown names/types, paginated principal results remain supported, and malformed entitlement data reports an error. Write previews share the same decoder and continue refusing unreadable entitlement state.
 
+## Unreleased — security documentation corrections
+
+Clarify actual capability, credential, local-write and transport boundaries where applicable.
+Pin documented setup/fallback tools and make credential examples owner-only before writing,
+without overwriting existing files. Runtime permissions, TLS defaults and approval behavior are unchanged.
+These edits do not establish a new ClawHub scan verdict.
+
 ## v2.4.1 — a target-limited role can use this skill
 
 * **Roles (HLD §18): the target resolver raised on every call.** It read a `name` field that this skill's target
