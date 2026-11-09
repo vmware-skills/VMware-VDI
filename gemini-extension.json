@@ -1,0 +1,16 @@
+{
+  "name": "vmware-vdi",
+  "version": "2.4.2",
+  "description": "VMware/Omnissa Horizon VDI intelligent operations — pools, sessions, machines, entitlements, images (MCP + CLI)",
+  "mcpServers": {
+    "vmware-vdi": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-vdi==2.4.2",
+        "vmware-vdi-mcp"
+      ]
+    }
+  }
+}
