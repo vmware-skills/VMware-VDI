@@ -40,7 +40,7 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 需要 Python `>=3.10` 和 `uv`。
 
 ```bash
-uv tool install vmware-vdi==2.4.2
+uv tool install vmware-vdi==2.4.3
 vmware-vdi --help
 ```
 
@@ -52,7 +52,7 @@ vmware-vdi --help
 ### 快速开始
 
 ```bash
-uv tool install vmware-vdi==2.4.2
+uv tool install vmware-vdi==2.4.3
 vmware-vdi init      # 友好向导:连接 Connection Server 并发现你的桌面池
 vmware-vdi doctor
 ```
@@ -71,7 +71,7 @@ vmware-vdi doctor
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": ["--from", "vmware-vdi==2.4.2", "vmware-vdi-mcp"],
+      "args": ["--from", "vmware-vdi==2.4.3", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }

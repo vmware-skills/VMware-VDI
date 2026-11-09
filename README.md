@@ -43,7 +43,7 @@ Full agent instructions: [`skills/vmware-vdi/SKILL.md`](skills/vmware-vdi/SKILL.
 Requires Python `>=3.10` and `uv`.
 
 ```bash
-uv tool install vmware-vdi==2.4.2
+uv tool install vmware-vdi==2.4.3
 vmware-vdi --help
 ```
 
@@ -55,7 +55,7 @@ Target, credential and local data setup: [setup guide](skills/vmware-vdi/referen
 ### Quick start
 
 ```bash
-uv tool install vmware-vdi==2.4.2
+uv tool install vmware-vdi==2.4.3
 vmware-vdi init      # friendly wizard: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 vmware-vdi health    # one-glance VDI health
@@ -79,7 +79,7 @@ Copy this configuration into your MCP client's local stdio settings. The client 
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": ["--from", "vmware-vdi==2.4.2", "vmware-vdi-mcp"],
+      "args": ["--from", "vmware-vdi==2.4.3", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }
