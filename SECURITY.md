@@ -52,7 +52,7 @@ C0/C1 control-character stripping) before it reaches the model.
 
 ## Static Analysis
 ```bash
-uvx bandit -r vmware_vdi/     # 0 issues at all severities as of v1.0.0
+uvx bandit==1.9.4 -r vmware_vdi/     # 0 issues at all severities as of v1.0.0
 ```
 
 ## Supported Versions
