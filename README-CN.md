@@ -40,7 +40,7 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 需要 Python `>=3.10` 和 `uv`。
 
 ```bash
-uv tool install vmware-vdi==2.4.3
+uv tool install vmware-vdi==2.4.4
 vmware-vdi --help
 ```
 
@@ -52,7 +52,7 @@ vmware-vdi --help
 ### 快速开始
 
 ```bash
-uv tool install vmware-vdi==2.4.3
+uv tool install vmware-vdi==2.4.4
 vmware-vdi init      # 友好向导:连接 Connection Server 并发现你的桌面池
 vmware-vdi doctor
 ```
@@ -71,7 +71,7 @@ vmware-vdi doctor
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": ["--from", "vmware-vdi==2.4.3", "vmware-vdi-mcp"],
+      "args": ["--from", "vmware-vdi==2.4.4", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }
@@ -221,3 +221,10 @@ vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改�
 ## 许可证
 
 MIT
+
+### 瞬时请求恢复
+
+仅 GET 请求会在传输故障或 502/503/504 响应后自动重试。写请求即使显式提供
+重试次数也只发送一次：未收到响应时，变更可能已经生效。再次写入前应先检查
+目标状态。明确认证拒绝后的单次认证恢复单独处理。该边界已通过合成 HTTP
+契约测试，不能据此宣称获得真实设备兼容性结论。
