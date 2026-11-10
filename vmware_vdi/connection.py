@@ -232,7 +232,7 @@ class HorizonClient:
         json_data: dict[str, Any] | None = None,
         retries: int = 1,
     ) -> httpx.Response:
-        """Send one request, recovering from auth and transient failures.
+        """Send one request; transient recovery is GET-only, auth recovery bounded.
 
         (1) transport/timeout and transient gateway statuses (502/503/504) retry
         once after a short delay; (2) a 401/403 triggers one token re-auth, then
@@ -240,6 +240,14 @@ class HorizonClient:
         transport-error handling; (3) any remaining error status is translated to
         a VdiApiError with a teaching message. 4xx client errors are NOT retried.
         """
+        # A lost write response is not evidence that the mutation failed.
+        # Never replay a write on a transient error, even with an explicit budget.
+        if method != "GET":
+            retries = 0
+        uncertain_write = (
+            "The write may already have taken effect; inspect the target before retrying. "
+            if method != "GET" else ""
+        )
         attempt = 0
         reauthed = False
         while True:
@@ -253,7 +261,7 @@ class HorizonClient:
                     time.sleep(_RETRY_DELAY_SEC)
                     continue
                 raise VdiApiError(
-                    f"Horizon request could not connect. {_transport_hint(exc)} "
+                    f"{uncertain_write}Horizon request could not connect. {_transport_hint(exc)} "
                     f"Then run 'vmware-vdi doctor'. Configured host: {self._target.host}. "
                     f"Failing call: {method} {path}",
                     method=method,
@@ -273,7 +281,7 @@ class HorizonClient:
 
             if resp.status_code >= 400:
                 raise VdiApiError(
-                    f"Horizon returned HTTP {resp.status_code}. {_hint_for_status(resp.status_code)} "
+                    f"{uncertain_write if resp.status_code in _TRANSIENT_STATUS else ''}Horizon returned HTTP {resp.status_code}. {_hint_for_status(resp.status_code)} "
                     f"Run 'vmware-vdi doctor' if every call to this target fails. "
                     f"Failing call: {method} {path}",
                     status_code=resp.status_code,

@@ -72,3 +72,7 @@ when it cannot be read:
 index. GET-response *field names* are defensive (`.get()` with fallbacks) and pending validation against a
 live Connection Server — a mismatch yields empty results, not a crash. First real-Horizon use should
 confirm the `session`/`machine`/`pool` projections and the `apply-image` / entitlement bodies.
+
+## Maintenance safety boundary
+
+After a write timeout or gateway error, inspect the Horizon target before retrying: the write may already have happened. Automatic transient retries apply only to GET reads; explicit authentication recovery is separate.
