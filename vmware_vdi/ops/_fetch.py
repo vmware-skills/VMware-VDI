@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from vmware_vdi.ops._errors import VdiOpsError
+
 _PAGE_SIZE = 1000
 _MAX_PAGES = 100
 
@@ -39,9 +41,12 @@ def fetch_all(client: Any, path: str, params: dict | None = None, *, page_size: 
         p["size"] = page_size
         data = client.get(path, params=p)
         if isinstance(data, dict):
-            data = data.get("results") or data.get("items") or []
+            data = data["results"] if "results" in data else data.get("items")
         if not isinstance(data, list):
-            data = []
+            raise VdiOpsError(
+                "Horizon collection response shape was not recognized; inventory is unknown. "
+                "Check the endpoint and response format before retrying. Nothing was changed."
+            )
         added = 0
         for row in data:
             rid = row.get("id") if isinstance(row, dict) else None
@@ -54,6 +59,9 @@ def fetch_all(client: Any, path: str, params: dict | None = None, *, page_size: 
             out.append(row)
             added += 1
         if len(data) < page_size or added == 0:
-            break
+            return out
         page += 1
-    return out
+    raise VdiOpsError(
+        "Horizon collection is incomplete: the pagination safety limit was reached. "
+        "Narrow the inventory scope or investigate pagination before retrying. Nothing was changed."
+    )
