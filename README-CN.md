@@ -40,7 +40,7 @@ AI 驱动的 VMware / Omnissa **Horizon VDI** 智能运维 —— 桌面池、RD
 需要 Python `>=3.10` 和 `uv`。
 
 ```bash
-uv tool install vmware-vdi==2.4.4
+uv tool install vmware-vdi==2.4.5
 vmware-vdi --help
 ```
 
@@ -52,7 +52,7 @@ vmware-vdi --help
 ### 快速开始
 
 ```bash
-uv tool install vmware-vdi==2.4.4
+uv tool install vmware-vdi==2.4.5
 vmware-vdi init      # 友好向导:连接 Connection Server 并发现你的桌面池
 vmware-vdi doctor
 ```
@@ -71,7 +71,7 @@ vmware-vdi doctor
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": ["--from", "vmware-vdi==2.4.4", "vmware-vdi-mcp"],
+      "args": ["--from", "vmware-vdi==2.4.5", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }
@@ -217,6 +217,8 @@ vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改�
 如果还有 2.0 之前的安装共用这个 `rules.yaml`，请把它的 vmware-policy 也升到 ≥ 1.18.2：它会按新旧两个名字匹配每条规则，一份文件两边都管用。
 
 <a id="readme-license"></a>
+
+清单响应无法识别或分页安全上限耗尽时，会在写预览或确认执行使用不完整清单之前拒绝。confirm 和未知占用确认都不能绕过；Horizon 正向真机验证仍待补。
 
 ## 许可证
 

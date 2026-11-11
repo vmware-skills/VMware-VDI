@@ -1,3 +1,9 @@
+## v2.4.5 (2026-11-11) — Refuse writes after incomplete Horizon inventory reads
+
+Malformed collection envelopes and exhausted pagination budgets refuse before a complete inventory can be asserted. Confirm and occupancy acknowledgement cannot override this missing evidence. Existing measured-empty and non-paginating response compatibility remain intact. No Horizon appliance validation is claimed.
+
+Validation: focused before-fix reproductions and repository regression suites; synthetic API contracts do not establish a positive 9.1/PAIS/Horizon appliance result.
+
 ## v2.4.3 — Security documentation and Gemini extension packaging
 
 Released 2026-11-09.

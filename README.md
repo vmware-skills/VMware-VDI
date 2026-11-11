@@ -43,7 +43,7 @@ Full agent instructions: [`skills/vmware-vdi/SKILL.md`](skills/vmware-vdi/SKILL.
 Requires Python `>=3.10` and `uv`.
 
 ```bash
-uv tool install vmware-vdi==2.4.4
+uv tool install vmware-vdi==2.4.5
 vmware-vdi --help
 ```
 
@@ -55,7 +55,7 @@ Target, credential and local data setup: [setup guide](skills/vmware-vdi/referen
 ### Quick start
 
 ```bash
-uv tool install vmware-vdi==2.4.4
+uv tool install vmware-vdi==2.4.5
 vmware-vdi init      # friendly wizard: connect to a Connection Server + discover your pools
 vmware-vdi doctor    # verify config / credentials / connectivity
 vmware-vdi health    # one-glance VDI health
@@ -79,7 +79,7 @@ Copy this configuration into your MCP client's local stdio settings. The client 
   "mcpServers": {
     "vmware-vdi": {
       "command": "uvx",
-      "args": ["--from", "vmware-vdi==2.4.4", "vmware-vdi-mcp"],
+      "args": ["--from", "vmware-vdi==2.4.5", "vmware-vdi-mcp"],
       "env": {
         "VMWARE_VDI_CONFIG": "~/.vmware-vdi/config.yaml"
       }
@@ -314,6 +314,8 @@ please [file an issue](https://github.com/vmware-skills/VMware-VDI/issues) with 
 looks empty. Remove user identities, session IDs, machine/host names, internal addresses and credentials before sharing. Quality: 32 regression tests, ruff clean, bandit 0, tool endpoints pinned to a verified spec.
 
 <a id="readme-license"></a>
+
+Unrecognized collection responses and exhausted pagination budgets fail before write previews or confirmed changes use an incomplete inventory. Neither confirm nor acknowledgement of unknown occupancy bypasses this refusal. Horizon positive appliance validation is still pending.
 
 ## License
 
