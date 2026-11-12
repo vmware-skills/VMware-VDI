@@ -6,13 +6,13 @@
 
 通过专业运维工具调查 Horizon 桌面与会话。
 
-[English](README.md) · 简体中文
+[English](https://github.com/vmware-skills/VMware-VDI/blob/main/README.md) · 简体中文
 
 社区维护 · MIT 开源 · 非 VMware/Broadcom/Omnissa 官方产品。
 
-[![18 秒调查示意演示](https://raw.githubusercontent.com/vmware-skills/marketplace/main/assets/demos/vmware-skills-zh.gif)](https://github.com/vmware-skills/marketplace/blob/main/assets/demos/vmware-skills-zh.mp4)
+[![18 秒调查示意演示](https://raw.githubusercontent.com/vmware-skills/marketplace/main/assets/demos/vmware-skills-zh.gif)](https://github.com/vmware-skills/marketplace/releases/download/demos-2026-11-12/vmware-skills-zh.mp4)
 
-使用合成数据的示意动画，非实时录屏。[观看家族 AI 配音介绍（约 2 分钟）](https://github.com/vmware-skills/marketplace/blob/main/assets/demos/vmware-skills-zh.mp4)
+GIF 使用合成数据；视频包含脱敏的历史截图。[下载家族 AI 配音介绍（约 2 分钟）](https://github.com/vmware-skills/marketplace/releases/download/demos-2026-11-12/vmware-skills-zh.mp4)
 
 <a id="readme-capabilities-and-workflows"></a>
 
@@ -33,9 +33,9 @@ uv tool install vmware-vdi==2.4.5
 vmware-vdi --help
 ```
 
-需要 uv 与 Python >=3.10。远程查询前，在本地配置目标与凭据。[配置指南](skills/vmware-vdi/references/setup-guide.md)。
+需要 uv 与 Python >=3.10。远程查询前，在本地配置目标与凭据。[配置指南](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/references/setup-guide.md)。
 
-Claude Code 及其他宿主安装方式见[家族门户](https://github.com/vmware-skills/marketplace/blob/main/README-CN.md)。
+Agent 宿主安装见本模块的[配置指南](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/references/setup-guide.md)，以及 [Cursor、Codex、Gemini CLI、Cline 与本地模型示例](https://github.com/vmware-skills/marketplace/blob/main/docs/agent-hosts-CN.md)。
 
 <a id="readme-safety-and-audit"></a>
 
@@ -47,11 +47,11 @@ Claude Code 及其他宿主安装方式见[家族门户](https://github.com/vmwa
 
 ## 详细文档
 
-- [能力范围](skills/vmware-vdi/references/capabilities.md)
-- [CLI 用法](skills/vmware-vdi/references/cli-reference.md)
-- [详细用法与架构](skills/vmware-vdi/references/detailed-guide-CN.md)
-- [MCP 启动配置](.mcp.json)
-- [唯一技能指令正本](skills/vmware-vdi/SKILL.md)
+- [能力范围](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/references/capabilities.md)
+- [CLI 用法](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/references/cli-reference.md)
+- [详细用法与架构](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/references/detailed-guide-CN.md)
+- [MCP 启动配置](https://github.com/vmware-skills/VMware-VDI/blob/main/.mcp.json)
+- [唯一技能指令正本](https://github.com/vmware-skills/VMware-VDI/blob/main/skills/vmware-vdi/SKILL.md)
 
 <a id="readme-companion-skills"></a>
 
@@ -59,4 +59,4 @@ Claude Code 及其他宿主安装方式见[家族门户](https://github.com/vmwa
 
 <a id="readme-license"></a>
 
-[问题与反馈](https://github.com/vmware-skills/VMware-VDI/issues) · [MIT](LICENSE)
+[问题与反馈](https://github.com/vmware-skills/VMware-VDI/issues) · [MIT](https://github.com/vmware-skills/VMware-VDI/blob/main/LICENSE)
