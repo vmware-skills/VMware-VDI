@@ -6,11 +6,11 @@ Investigate Horizon desktops and sessions with focused operational tools.
 
 English · [简体中文](README-CN.md)
 
-Community-maintained · MIT · Not an official VMware/Broadcom product.
+Community-maintained · MIT · Not an official VMware/Broadcom/Omnissa product.
 
 [![18-second illustrative investigation demo](https://raw.githubusercontent.com/vmware-skills/marketplace/main/assets/demos/vmware-skills-en.gif)](https://github.com/vmware-skills/marketplace/blob/main/assets/demos/vmware-skills-en.mp4)
 
-Synthetic-data animation, not a live recording. [Watch the narrated family introduction (~2 min)](https://github.com/vmware-skills/marketplace/blob/main/assets/demos/vmware-skills-en.mp4)
+Synthetic-data animation, not a live recording. [Watch the AI-narrated family introduction (~2 min)](https://github.com/vmware-skills/marketplace/blob/main/assets/demos/vmware-skills-en.mp4)
 
 ## Why use it?
 
