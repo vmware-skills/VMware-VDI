@@ -215,3 +215,5 @@ MIT
 ## Current evidence boundary
 
 After a write timeout or gateway error, inspect the Horizon target before retrying: the write may already have happened. Automatic transient retries apply only to GET reads; explicit authentication recovery is separate. See `references/capabilities.md`.
+
+[Contracts](references/mcp-result-contract.md).

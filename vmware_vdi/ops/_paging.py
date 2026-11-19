@@ -9,6 +9,8 @@ from __future__ import annotations
 
 
 def envelope(items: list[dict], *, limit: int, offset: int) -> dict:
+    from vmware_policy.envelope import next_offset
+
     total = len(items)
     page = items[offset : offset + limit]
     return {
@@ -16,6 +18,7 @@ def envelope(items: list[dict], *, limit: int, offset: int) -> dict:
         "returned": len(page),
         "limit": limit,
         "offset": offset,
+        "next_offset": next_offset(len(page), limit, offset, total),
         "total": total,
         "truncated": offset + limit < total,
         "hint": "" if offset + limit >= total else f"{total - offset - limit} more — raise offset/limit.",

@@ -1,3 +1,9 @@
+## Unreleased — shared MCP result contract
+
+Keep existing truncated/hint values and add next_offset. Requires Policy 1.26.0; release it first and refresh this repository’s lock before merging or publishing. Tool names, arguments, defaults and confirmation checks are unchanged.
+
+中文：保留旧 truncated/hint，只新增 next_offset。 依赖 Policy 1.26.0，须先发布共享库再刷新本仓锁文件后合并/发布。工具名、参数、默认值和确认机制不变。
+
 ## v2.4.5 (2026-11-11) — Refuse writes after incomplete Horizon inventory reads
 
 Malformed collection envelopes and exhausted pagination budgets refuse before a complete inventory can be asserted. Confirm and occupancy acknowledgement cannot override this missing evidence. Existing measured-empty and non-paginating response compatibility remain intact. No Horizon appliance validation is claimed.
