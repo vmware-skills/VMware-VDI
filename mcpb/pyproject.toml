@@ -1,6 +1,6 @@
 [project]
 name = "vmware-vdi-mcpb"
-version = "2.4.5"
+version = "2.4.6"
 description = "Claude Desktop extension shim that runs the published vmware-vdi MCP server"
 requires-python = ">=3.10"
-dependencies = ["vmware-vdi==2.4.5"]
+dependencies = ["vmware-vdi==2.4.6"]
